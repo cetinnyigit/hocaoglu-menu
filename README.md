@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Esnaf Menü
 
-## Getting Started
+NFC kartla açılan dijital esnaf menüleri. Next.js 14 (App Router) + TypeScript + Tailwind.
 
-First, run the development server:
+Canlı sayfa: `/menu/hocaoglu`
+
+## Geliştirme
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev     # http://localhost:3000
+npm run build   # production build + statik sayfa üretimi
+npm run start   # build'i lokalde çalıştır
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Yapı
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+app/menu/[slug]/page.tsx   Dinamik menü route'u (build'de statik üretilir)
+lib/menu-data/             Menü verisi — tek doğruluk kaynağı
+  types.ts                 Ortak veri modeli
+  hocaoglu.ts              Hocaoğlu Börek & Cafe menüsü
+  index.ts                 Esnaf kaydı
+components/menu/           Sunum bileşenleri
+public/menu/<slug>/        Esnafa ait fotoğraflar
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Menü içeriği server'da render edilir. Sayfadaki tek client bileşeni
+`CategoryNav` (kategori scroll-spy'ı).
 
-## Learn More
+## Fiyat girme
 
-To learn more about Next.js, take a look at the following resources:
+`lib/menu-data/hocaoglu.ts` içinde her ürünün `price` alanı boş. Tırnakların
+arasına yaz:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```ts
+{ name: 'Künefe', price: '₺180' },
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Fiyat girilen üründe fiyat, boş bırakılanda orijinal tasarımdaki renkli çubuk
+placeholder'ı gösterilir. İkisi karışık olabilir.
 
-## Deploy on Vercel
+## Yeni esnaf ekleme
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Fotoğrafları `public/menu/<slug>/` altına koy.
+2. `lib/menu-data/<slug>.ts` oluştur, `hocaoglu.ts`'i şablon al.
+3. `lib/menu-data/index.ts` içindeki `restaurants` dizisine ekle.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Route otomatik gelir: `/menu/<slug>`. `generateStaticParams` her esnaf için
+build sırasında statik HTML üretir; listede olmayan slug'lar 404 döner.
+
+## Bölüm bloklarına dair
+
+Her bölümün içeriği sıralı `blocks` dizisidir — `note`, `cards`, `photo`,
+`group`. Sıra neyse sayfada o sırayla render edilir, böylece fotoğraf ve liste
+düzeni esnaftan esnafa değişebilir.
+
+## Bilinen sınırlamalar
+
+- **Yellowtail fontu Türkçe'yi tam kapsamıyor.** Fontun yalnızca `latin` alt
+  kümesi var; `ş`, `ğ`, `İ` glifleri yok ve tarayıcı bu harflerde cursive
+  fallback'e düşer. Orijinal HTML'de de durum böyleydi. Etkilenen tek başlık:
+  "Şeker Tadında". Tam Türkçe destekli bir script font (Pacifico, Dancing
+  Script, Great Vibes) ile değiştirilebilir.
+- **Kaynak fotoğraflar düşük çözünürlüklü** (578–900 px). Orijinal HTML'e
+  gömülü hâlleriyle çıkarıldı; yüksek DPI telefonlarda hafif yumuşak
+  görünebilir. Daha büyük orijinaller varsa `public/menu/hocaoglu/` altındaki
+  dosyaları değiştirmek ve `lib/menu-data/hocaoglu.ts` içindeki
+  `width`/`height` değerlerini güncellemek yeterli.
