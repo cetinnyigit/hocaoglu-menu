@@ -1,3 +1,4 @@
+import { formatPrice } from '@/lib/format-price'
 import type { MenuItem } from '@/lib/menu-data/types'
 
 /**
@@ -16,7 +17,7 @@ export function ItemList({ items }: { items: MenuItem[] }) {
           {item.soldOut ? (
             <span className="item-soldout">Tükendi</span>
           ) : item.price ? (
-            <span className="item-price">{item.price}</span>
+            <span className="item-price">{formatPrice(item.price)}</span>
           ) : (
             <span className="item-bars" aria-hidden="true">
               <span className="b1" />

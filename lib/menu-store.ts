@@ -146,12 +146,24 @@ export async function readOverridesFresh(
  * Sayfayı statik tutmanın anahtarı bu: blob okuması unstable_cache içine
  * alınmasa, SDK'nın kendi fetch'i sayfayı dinamik render'a düşürür ve her
  * ziyarette depoya gidilirdi. Kayıt sonrası revalidateTag ile tazeleniyor.
+ *
+ * revalidate şart: bu önbellek .next/cache'e yazılıyor ve Vercel'de build
+ * cache'i deploy'lar arasında korunuyor. Süre sınırı olmadan eski bir sonuç
+ * (ör. depo henüz boşken okunan hâli) yeni deploy'larda da kullanılmaya
+ * devam ediyordu.
  */
+/**
+ * Kısa tutuluyor: bu okuma yalnızca sayfa yeniden üretilirken yapılıyor,
+ * ziyaretçi isteğinde değil. Asıl güncelleme zaten kayıt anında
+ * revalidateTag ile anında oluyor; bu yalnızca güvenlik ağı.
+ */
+const OVERRIDES_TTL_SECONDS = 60
+
 export function readOverrides(slug: string): Promise<MenuOverrides> {
   return unstable_cache(
     () => readOverridesFresh(slug),
     ['menu-overrides', slug],
-    { tags: [overridesTag(slug)] },
+    { tags: [overridesTag(slug)], revalidate: OVERRIDES_TTL_SECONDS },
   )()
 }
 

@@ -6,9 +6,6 @@
 /** Bölüm renk temaları — globals.css'teki .theme-* sınıflarına karşılık gelir. */
 export type MenuTheme = 'red' | 'tan' | 'olive' | 'brown' | 'green'
 
-/** Kahvaltı kartlarındaki rozet renkleri. */
-export type BadgeTone = 'gold' | 'klasik' | 'mini'
-
 export type MenuImage = {
   src: string
   alt: string
@@ -27,10 +24,6 @@ export type MenuItem = {
 export type MenuCard = {
   name: string
   desc: string
-  badge: {
-    label: string
-    tone: BadgeTone
-  }
   price?: string
   soldOut?: boolean
 }

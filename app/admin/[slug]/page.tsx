@@ -119,9 +119,10 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
       ) : null}
 
       <p className="admin-hint">
-        Fiyatı boş bırakılan ürünlerde menüde fiyat yerine renkli çubuk
-        görünür. &quot;Tükendi&quot; işaretlenen ürün menüde soluk gösterilir ve
-        fiyatı gizlenir.
+        Sadece sayıyı yaz, &quot;TL&quot; menüde otomatik eklenir (150 →{' '}
+        <b>150 TL</b>). Fiyatı boş bırakılan ürünlerde menüde fiyat yerine
+        renkli çubuk görünür. &quot;Tükendi&quot; işaretlenen ürün menüde soluk
+        gösterilir ve fiyatı gizlenir.
       </p>
 
       <form action={save}>

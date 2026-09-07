@@ -46,19 +46,16 @@ export const hocaoglu: Restaurant = {
             {
               name: 'Gold Kahvaltı',
               desc: 'Yeşil zeytin, siyah zeytin, sigara böreği, beyaz peynir, kaşar peyniri, salatalık, domates, haşlanmış yumurta, tereyağı, bal, kaymak, salam',
-              badge: { label: 'Gold', tone: 'gold' },
               price: '',
             },
             {
               name: 'Klasik Kahvaltı',
               desc: 'Yeşil zeytin, siyah zeytin, sigara böreği, beyaz peynir, kaşar peyniri, salatalık, domates, haşlanmış yumurta, tereyağı, bal, kaymak, salam',
-              badge: { label: 'Klasik', tone: 'klasik' },
               price: '',
             },
             {
               name: 'Mini Kahvaltı',
               desc: 'Yeşil zeytin, siyah zeytin, sigara böreği, beyaz peynir, kaşar peyniri, salatalık, domates, haşlanmış yumurta, tereyağı, bal, kaymak, salam',
-              badge: { label: 'Mini', tone: 'mini' },
               price: '',
             },
           ],

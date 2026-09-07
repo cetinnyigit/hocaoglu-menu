@@ -312,20 +312,23 @@ body {
 }
 
 /* ---------- KAHVALTI CARDS ---------- */
+/* Kahvaltı kartlarıyla aynı görünür — koyu zemin müşteri talebiyle kaldırıldı. */
 .kahvalti-note {
-  background: var(--brown-dark);
-  color: #f3e9d8;
+  background: var(--paper);
+  color: var(--muted);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px 16px;
-  font-size: 12.5px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.5;
   margin-bottom: 16px;
 }
 .kahvalti-note b {
   display: block;
-  font-size: 15px;
+  font-size: 15.5px;
+  font-weight: 700;
   margin-bottom: 4px;
-  color: #fff;
+  color: var(--ink);
 }
 
 .kahvalti-grid {
@@ -352,36 +355,6 @@ body {
   color: var(--muted);
   line-height: 1.5;
   margin: 4px 0 0;
-}
-.kahvalti-card .badge {
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  padding: 4px 11px;
-  border-radius: 999px;
-}
-.badge-gold-tier {
-  background: #3f8a52;
-}
-.badge-klasik {
-  background: #b5502f;
-}
-.badge-mini {
-  background: #5c6b3a;
-}
-.kahvalti-card .card-meta {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-.kahvalti-card .card-price {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- FOOTER ---------- */

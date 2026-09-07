@@ -51,6 +51,11 @@ eder ve CDN'den servis edilir. Panelden kaydedilince `revalidateTag` +
 Fiyatı boş olan üründe orijinal tasarımdaki renkli çubuk placeholder'ı,
 "tükendi" işaretlide soluk satır + rozet görünür.
 
+Panele sadece sayı yazmak yeterli; **TL gösterim anında eklenir**
+(`lib/format-price.ts`). Değer zaten "TL" ya da "₺" içeriyorsa olduğu gibi
+bırakılır. Biçimlendirme kayıt anında yapılmaz — panelde ham değer görünür,
+düzenlemesi kolay olsun diye.
+
 Başlangıç fiyatlarını koda yazmak istersen `lib/menu-data/hocaoglu.ts`
 içindeki `price` alanları hâlâ geçerli — panelden girilen değer onu ezer.
 
