@@ -76,7 +76,17 @@ Gerekli ortam değişkenleri:
 | --- | --- |
 | `ADMIN_PASSWORD` | Müşteriye verilecek panel şifresi |
 | `ADMIN_SESSION_SECRET` | Oturum çerezini imzalar, en az 16 karakter |
-| `BLOB_READ_WRITE_TOKEN` | Vercel'de Blob store bağlanınca otomatik gelir |
+| Blob kimliği | Vercel'de store bağlanınca otomatik gelir, aşağıya bak |
+
+Blob kimlik doğrulamasının iki yolu var, `lib/menu-store.ts` ikisini de kabul
+eder:
+
+- **`BLOB_STORE_ID` + `VERCEL_OIDC_TOKEN`** — Vercel'in güncel modeli. Store'u
+  projeye bağlayınca store id enjekte edilir, OIDC token'ı çalışma anında
+  üretilir. Bu modelde ortamda `BLOB_READ_WRITE_TOKEN` **hiç bulunmaz**, bu
+  normaldir. Projede OIDC (Secure Backend Access) açık olmalı.
+- **`BLOB_READ_WRITE_TOKEN`** — uzun ömürlü token. Lokal geliştirmede
+  `.env.local`'e koymak için pratik.
 
 Blob store'u oluşturduktan sonra **projeye bağlayıp yeniden deploy et** —
 `BLOB_READ_WRITE_TOKEN` ancak o zaman fonksiyona geçer. Token yokken panel

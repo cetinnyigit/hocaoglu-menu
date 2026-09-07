@@ -112,9 +112,9 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
 
       {!isBlobConfigured() ? (
         <p className="admin-error" role="alert">
-          Blob deposu bağlı değil (BLOB_READ_WRITE_TOKEN yok). Kaydetme
-          çalışmaz. Vercel projesine Private bir Blob store bağlayıp yeniden
-          deploy et.
+          Blob deposu bağlı değil: ne BLOB_READ_WRITE_TOKEN ne de BLOB_STORE_ID
+          tanımlı. Kaydetme çalışmaz. Vercel projesine Private bir Blob store
+          bağlayıp yeniden deploy et.
         </p>
       ) : null}
 

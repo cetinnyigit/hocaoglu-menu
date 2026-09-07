@@ -25,8 +25,41 @@ function blobPath(slug: string): string {
   return `menu-overrides/${slug}.json`
 }
 
+/**
+ * Blob kimlik doğrulamasının iki yolu var ve SDK ikisini de kabul ediyor:
+ *
+ *  1. BLOB_READ_WRITE_TOKEN — uzun ömürlü token (eski model, lokal .env).
+ *  2. BLOB_STORE_ID + VERCEL_OIDC_TOKEN — Vercel'in güncel modeli; store'u
+ *     projeye bağlayınca store id enjekte edilir, OIDC token'ı çalışma anında
+ *     üretilir. Bu durumda ortamda BLOB_READ_WRITE_TOKEN hiç bulunmaz.
+ *
+ * `token` dönmediğimiz durumlarda SDK kendi çözümlemesini yapıyor.
+ *
+ * Store'a "Environment Variables Prefix" verildiyse değişken adı
+ * ONEK_BLOB_READ_WRITE_TOKEN olabilir; onu da son eke bakıp yakalıyoruz.
+ */
+function blobAuth(): { token?: string; source: string } | null {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return { source: 'BLOB_READ_WRITE_TOKEN' }
+  }
+
+  const prefixed = blobTokenCandidates()[0]
+  if (prefixed) return { token: process.env[prefixed], source: prefixed }
+
+  if (process.env.BLOB_STORE_ID) return { source: 'BLOB_STORE_ID (OIDC)' }
+
+  return null
+}
+
+/** Yalnızca değişken adları — token değerleri hiçbir yere sızdırılmaz. */
+export function blobTokenCandidates(): string[] {
+  return Object.keys(process.env).filter(
+    (key) => key.endsWith('BLOB_READ_WRITE_TOKEN') && process.env[key],
+  )
+}
+
 export function isBlobConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+  return blobAuth() !== null
 }
 
 /**
@@ -38,9 +71,6 @@ function onVercel(): boolean {
   return Boolean(process.env.VERCEL)
 }
 
-function usingBlob(): boolean {
-  return isBlobConfigured()
-}
 
 function parse(raw: string): MenuOverrides {
   const data = JSON.parse(raw) as Partial<MenuOverrides>
@@ -90,7 +120,8 @@ export function overridesTag(slug: string): string {
 export async function readOverridesFresh(
   slug: string,
 ): Promise<MenuOverrides> {
-  if (!usingBlob()) return readLocal(slug)
+  const auth = blobAuth()
+  if (!auth) return readLocal(slug)
 
   try {
     // useCache: false — kaydettikten hemen sonra CDN'deki eski kopyayı
@@ -99,6 +130,7 @@ export async function readOverridesFresh(
     const result = await get(blobPath(slug), {
       access: ACCESS,
       useCache: false,
+      ...(auth.token ? { token: auth.token } : {}),
     })
     if (!result || result.statusCode !== 200) return EMPTY
     return parse(await new Response(result.stream).text())
@@ -133,12 +165,14 @@ export async function writeOverrides(
     items,
   }
 
-  if (!usingBlob()) {
+  const auth = blobAuth()
+
+  if (!auth) {
     if (onVercel()) {
       throw new Error(
-        'BLOB_READ_WRITE_TOKEN tanımlı değil. Vercel projesine bir Blob store ' +
-          '(Private) bağla ve yeniden deploy et — değişken ancak o zaman ' +
-          'fonksiyona geçer.',
+        'Blob kimlik bilgisi bulunamadı: ne BLOB_READ_WRITE_TOKEN ne de ' +
+          'BLOB_STORE_ID tanımlı. Vercel projesine Private bir Blob store ' +
+          'bağla ve yeniden deploy et.',
       )
     }
     await writeLocal(slug, data)
@@ -150,6 +184,7 @@ export async function writeOverrides(
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
+    ...(auth.token ? { token: auth.token } : {}),
   })
 
   return data

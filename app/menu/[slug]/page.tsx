@@ -21,6 +21,16 @@ export function generateStaticParams() {
  */
 export const dynamicParams = true
 
+/**
+ * Güvenlik ağı. Asıl güncelleme panelden kaydedince anında oluyor
+ * (revalidateTag + revalidatePath). Ama OIDC kimlik doğrulaması build
+ * sırasında kullanılamazsa fiyatlar o build'de okunamaz ve sayfa fiyatsız
+ * üretilir; bu sayede en geç bir saat içinde kendini toparlar.
+ *
+ * Ziyaretçi yine CDN'den anında cevap alır (stale-while-revalidate).
+ */
+export const revalidate = 3600
+
 export function generateMetadata({ params }: Props): Metadata {
   const restaurant = getRestaurant(params.slug)
   if (!restaurant) return {}
