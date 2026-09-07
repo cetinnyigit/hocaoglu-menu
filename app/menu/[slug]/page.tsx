@@ -4,6 +4,8 @@ import { CategoryNav } from '@/components/menu/CategoryNav'
 import { MenuHero } from '@/components/menu/MenuHero'
 import { MenuSection } from '@/components/menu/MenuSection'
 import { getRestaurant, getRestaurantSlugs } from '@/lib/menu-data'
+import { applyOverrides } from '@/lib/menu-merge'
+import { readOverrides } from '@/lib/menu-store'
 
 type Props = { params: { slug: string } }
 
@@ -12,8 +14,12 @@ export function generateStaticParams() {
   return getRestaurantSlugs().map((slug) => ({ slug }))
 }
 
-/** Listede olmayan bir slug istenirse 404 — rastgele sayfa üretilmesin. */
-export const dynamicParams = false
+/**
+ * dynamicParams bilerek açık (varsayılan). Kapalıyken revalidatePath sonrası
+ * sayfa geçersiz kılınıyor ama yeniden üretilemiyor ve 404 dönüyordu.
+ * Tanımsız slug'lar zaten aşağıdaki notFound() ile 404 oluyor.
+ */
+export const dynamicParams = true
 
 export function generateMetadata({ params }: Props): Metadata {
   const restaurant = getRestaurant(params.slug)
@@ -31,9 +37,13 @@ export function generateMetadata({ params }: Props): Metadata {
   }
 }
 
-export default function MenuPage({ params }: Props) {
-  const restaurant = getRestaurant(params.slug)
-  if (!restaurant) notFound()
+export default async function MenuPage({ params }: Props) {
+  const base = getRestaurant(params.slug)
+  if (!base) notFound()
+
+  // Panelden kaydedilen fiyat/tükendi bilgisi koddaki menünün üzerine biner.
+  // Okuma önbellekli olduğu için sayfa statik kalmaya devam eder.
+  const restaurant = applyOverrides(base, await readOverrides(params.slug))
 
   return (
     <>

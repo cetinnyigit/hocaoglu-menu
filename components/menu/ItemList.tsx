@@ -8,9 +8,14 @@ export function ItemList({ items }: { items: MenuItem[] }) {
   return (
     <div className="item-list">
       {items.map((item, i) => (
-        <div className="item-row" key={`${item.name}-${i}`}>
+        <div
+          className={item.soldOut ? 'item-row is-soldout' : 'item-row'}
+          key={`${item.name}-${i}`}
+        >
           <span className="item-name">{item.name}</span>
-          {item.price ? (
+          {item.soldOut ? (
+            <span className="item-soldout">Tükendi</span>
+          ) : item.price ? (
             <span className="item-price">{item.price}</span>
           ) : (
             <span className="item-bars" aria-hidden="true">

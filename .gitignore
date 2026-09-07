@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lokal gelistirmede fiyat deposu (uretimde Vercel Blob)
+/.data
+

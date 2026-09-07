@@ -20,6 +20,8 @@ export type MenuItem = {
   name: string
   /** Boş bırakılırsa fiyat yerine renkli çubuk placeholder gösterilir. */
   price?: string
+  /** Panelden işaretlenir; menüde soluk gösterilir. */
+  soldOut?: boolean
 }
 
 export type MenuCard = {
@@ -30,6 +32,7 @@ export type MenuCard = {
     tone: BadgeTone
   }
   price?: string
+  soldOut?: boolean
 }
 
 /**
@@ -71,4 +74,21 @@ export type Restaurant = {
     title: string
     description: string
   }
+}
+
+/**
+ * Panelden kaydedilen değişiklikler. Menünün kendisi kodda sabit kalır;
+ * burada yalnızca esnafın düzenleyebildiği alanlar tutulur ve render
+ * sırasında menünün üzerine bindirilir.
+ */
+export type ItemOverride = {
+  price?: string
+  soldOut?: boolean
+}
+
+export type MenuOverrides = {
+  version: 1
+  updatedAt: string
+  /** Anahtar: lib/menu-key.ts içindeki itemKey/cardKey üretimi. */
+  items: Record<string, ItemOverride>
 }
