@@ -19,10 +19,15 @@ export function CategoryNav({ sections }: { sections: MenuSection[] }) {
 
     const update = () => {
       frame = 0
+      // Eşik nav yüksekliğinden türetiliyor; çubuğun boyutu değişince
+      // sabit bir sayıyı güncellemeyi unutma riski kalmıyor.
+      const navHeight = document.getElementById('catnav')?.offsetHeight ?? 0
+      const threshold = navHeight + 50
+
       let current = ''
       for (const section of sections) {
         const el = document.getElementById(section.id)
-        if (el && el.getBoundingClientRect().top < 120) current = section.id
+        if (el && el.getBoundingClientRect().top < threshold) current = section.id
       }
       setActiveId(current)
     }
