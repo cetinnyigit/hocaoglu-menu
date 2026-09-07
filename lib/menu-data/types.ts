@@ -1,0 +1,74 @@
+/**
+ * Esnaf menüleri için ortak veri modeli.
+ * Yeni bir esnaf eklemek için: lib/menu-data/<slug>.ts oluştur, index.ts'e kaydet.
+ */
+
+/** Bölüm renk temaları — globals.css'teki .theme-* sınıflarına karşılık gelir. */
+export type MenuTheme = 'red' | 'tan' | 'olive' | 'brown' | 'green'
+
+/** Kahvaltı kartlarındaki rozet renkleri. */
+export type BadgeTone = 'gold' | 'klasik' | 'mini'
+
+export type MenuImage = {
+  src: string
+  alt: string
+  width: number
+  height: number
+}
+
+export type MenuItem = {
+  name: string
+  /** Boş bırakılırsa fiyat yerine renkli çubuk placeholder gösterilir. */
+  price?: string
+}
+
+export type MenuCard = {
+  name: string
+  desc: string
+  badge: {
+    label: string
+    tone: BadgeTone
+  }
+  price?: string
+}
+
+/**
+ * Bölüm içeriği sıralı bloklar hâlinde tutulur; böylece fotoğraf/liste/not
+ * sırası her esnaf için serbestçe değiştirilebilir.
+ */
+export type MenuBlock =
+  | { kind: 'note'; title: string; body: string }
+  | { kind: 'cards'; cards: MenuCard[] }
+  | { kind: 'photo'; image: MenuImage; spaced?: boolean }
+  | { kind: 'group'; title?: string; items: MenuItem[] }
+
+export type MenuSection = {
+  /** Hem DOM id'si hem de kategori nav'ındaki anchor hedefi. */
+  id: string
+  navLabel: string
+  theme: MenuTheme
+  heading: string
+  /** 'script' = Yellowtail el yazısı, 'plain' = kalın Poppins. */
+  headingStyle: 'script' | 'plain'
+  /** true ise başlık tema rengi yerine ana metin rengini kullanır. */
+  headingInk?: boolean
+  blocks: MenuBlock[]
+}
+
+export type Restaurant = {
+  slug: string
+  name: string
+  /** Hero üstündeki küçük büyük harfli satır, ör. "1962'DEN BERİ". */
+  established: string
+  tagline: string
+  hero: MenuImage
+  sections: MenuSection[]
+  footer: {
+    text: string
+    vatNote: string
+  }
+  seo: {
+    title: string
+    description: string
+  }
+}
