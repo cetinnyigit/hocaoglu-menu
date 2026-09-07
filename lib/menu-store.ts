@@ -25,8 +25,21 @@ function blobPath(slug: string): string {
   return `menu-overrides/${slug}.json`
 }
 
-function usingBlob(): boolean {
+export function isBlobConfigured(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+}
+
+/**
+ * Vercel'de dosya sistemi salt okunur; .data/ yedeği yalnızca lokalde
+ * anlamlı. Token'sız bir deploy'da sessizce oraya düşersek kaydetme
+ * anlaşılmaz bir 500 ile patlıyor — sebebi baştan söylüyoruz.
+ */
+function onVercel(): boolean {
+  return Boolean(process.env.VERCEL)
+}
+
+function usingBlob(): boolean {
+  return isBlobConfigured()
 }
 
 function parse(raw: string): MenuOverrides {
@@ -121,6 +134,13 @@ export async function writeOverrides(
   }
 
   if (!usingBlob()) {
+    if (onVercel()) {
+      throw new Error(
+        'BLOB_READ_WRITE_TOKEN tanımlı değil. Vercel projesine bir Blob store ' +
+          '(Private) bağla ve yeniden deploy et — değişken ancak o zaman ' +
+          'fonksiyona geçer.',
+      )
+    }
     await writeLocal(slug, data)
     return data
   }

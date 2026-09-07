@@ -78,6 +78,10 @@ Gerekli ortam değişkenleri:
 | `ADMIN_SESSION_SECRET` | Oturum çerezini imzalar, en az 16 karakter |
 | `BLOB_READ_WRITE_TOKEN` | Vercel'de Blob store bağlanınca otomatik gelir |
 
+Blob store'u oluşturduktan sonra **projeye bağlayıp yeniden deploy et** —
+`BLOB_READ_WRITE_TOKEN` ancak o zaman fonksiyona geçer. Token yokken panel
+açılır ama kaydetme çalışmaz; panel bunu kırmızı bir uyarıyla söyler.
+
 Blob store **Private** olarak oluşturulmalı. `lib/menu-store.ts` blob'u
 `access: 'private'` ile yazıp `get()` ile okuyor; erişim seviyesi store'unkiyle
 eşleşmezse işlem reddedilir. Fiyat dosyası herkese açık bir URL'den okunamaz,

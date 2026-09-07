@@ -85,7 +85,19 @@ export async function saveMenu(slug: string, formData: FormData) {
     JSON.stringify(current.items) === JSON.stringify(items)
 
   if (!unchanged) {
-    await writeOverrides(slug, items)
+    try {
+      await writeOverrides(slug, items)
+    } catch (error) {
+      // Yakalanmazsa kullanıcı yalnızca boş bir 500 görüyor ve sebebi
+      // Vercel loglarına bakmadan anlaşılmıyor. Mesajı panele taşıyoruz.
+      const message =
+        error instanceof Error ? error.message : 'Bilinmeyen hata'
+      console.error(`[saveMenu] ${slug} kaydedilemedi:`, error)
+      redirect(
+        `/admin/${slug}?hata=${encodeURIComponent(message.slice(0, 300))}`,
+      )
+    }
+
     // Önce önbellekli okumayı tazele, sonra statik menü sayfasını yeniden
     // ürettir. Sırası önemli: ters olursa sayfa eski veriyle üretilir.
     revalidateTag(overridesTag(slug))

@@ -5,7 +5,7 @@ import { logout, saveMenu } from '../actions'
 import { getRestaurant } from '@/lib/menu-data'
 import { cardKey, itemKey } from '@/lib/menu-key'
 import { applyOverrides } from '@/lib/menu-merge'
-import { readOverridesFresh } from '@/lib/menu-store'
+import { isBlobConfigured, readOverridesFresh } from '@/lib/menu-store'
 
 export const metadata: Metadata = {
   title: 'Menü Paneli',
@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 type Props = {
   params: { slug: string }
-  searchParams: { kaydedildi?: string }
+  searchParams: { kaydedildi?: string; hata?: string }
 }
 
 type Row = { key: string; name: string; price: string; soldOut: boolean }
@@ -101,6 +101,20 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
       {searchParams.kaydedildi ? (
         <p className="admin-success" role="status">
           Kaydedildi. Menü sayfası güncellendi.
+        </p>
+      ) : null}
+
+      {searchParams.hata ? (
+        <p className="admin-error" role="alert">
+          Kaydedilemedi: {searchParams.hata}
+        </p>
+      ) : null}
+
+      {!isBlobConfigured() ? (
+        <p className="admin-error" role="alert">
+          Blob deposu bağlı değil (BLOB_READ_WRITE_TOKEN yok). Kaydetme
+          çalışmaz. Vercel projesine Private bir Blob store bağlayıp yeniden
+          deploy et.
         </p>
       ) : null}
 
