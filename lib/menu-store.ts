@@ -1,4 +1,4 @@
-import { head, put } from '@vercel/blob'
+import { get, put } from '@vercel/blob'
 import { unstable_cache } from 'next/cache'
 import type { ItemOverride, MenuOverrides } from './menu-data/types'
 
@@ -8,7 +8,12 @@ import type { ItemOverride, MenuOverrides } from './menu-data/types'
  * Üretimde Vercel Blob'da tek bir JSON dosyası tutulur. Lokal geliştirmede
  * BLOB_READ_WRITE_TOKEN olmadığı için .data/ altındaki bir dosyaya düşer,
  * böylece panel token olmadan da denenebilir.
+ *
+ * Blob private: dosya herkese açık bir URL'den okunamaz, SDK isteği
+ * BLOB_READ_WRITE_TOKEN ile imzalar.
  */
+
+const ACCESS = 'private' as const
 
 const EMPTY: MenuOverrides = {
   version: 1,
@@ -75,12 +80,15 @@ export async function readOverridesFresh(
   if (!usingBlob()) return readLocal(slug)
 
   try {
-    const meta = await head(blobPath(slug))
-    // Blob CDN'i cache'liyor; kaydettikten hemen sonra eskisini okumamak için
-    // isteği cache dışına alıyoruz.
-    const response = await fetch(meta.url, { cache: 'no-store' })
-    if (!response.ok) return EMPTY
-    return parse(await response.text())
+    // useCache: false — kaydettikten hemen sonra CDN'deki eski kopyayı
+    // okumayalım. Bu çağrı sadece build/yeniden üretim sırasında yapılıyor,
+    // ziyaretçi isteğinde değil; maliyeti önemsiz.
+    const result = await get(blobPath(slug), {
+      access: ACCESS,
+      useCache: false,
+    })
+    if (!result || result.statusCode !== 200) return EMPTY
+    return parse(await new Response(result.stream).text())
   } catch {
     // Henüz hiç kayıt yapılmamışsa blob yoktur — menü koddaki hâliyle çıkar.
     return EMPTY
@@ -118,7 +126,7 @@ export async function writeOverrides(
   }
 
   await put(blobPath(slug), JSON.stringify(data), {
-    access: 'public',
+    access: ACCESS,
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
