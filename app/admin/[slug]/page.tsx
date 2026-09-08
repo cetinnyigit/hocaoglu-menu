@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { notFound, redirect } from 'next/navigation'
 import { logout, saveMenu } from '../actions'
+import { SESSION_COOKIE, canEdit, readSession } from '@/lib/auth'
 import { getRestaurant } from '@/lib/menu-data'
-import { cardKey, itemKey } from '@/lib/menu-key'
+import { cardKey, itemKey, noteKey } from '@/lib/menu-key'
 import { applyOverrides } from '@/lib/menu-merge'
 import { isBlobConfigured, readOverridesFresh } from '@/lib/menu-store'
 
@@ -34,7 +36,18 @@ function buildBlocks(
     const groups: Group[] = []
 
     for (const block of section.blocks) {
-      if (block.kind === 'cards') {
+      if (block.kind === 'note') {
+        groups.push({
+          rows: [
+            {
+              key: noteKey(section.id, block.title),
+              name: block.title,
+              price: block.price ?? '',
+              soldOut: block.soldOut ?? false,
+            },
+          ],
+        })
+      } else if (block.kind === 'cards') {
         groups.push({
           label: 'Kahvaltı tabakları',
           rows: block.cards.map((card) => ({
@@ -66,6 +79,11 @@ function buildBlocks(
 }
 
 export default async function AdminEditorPage({ params, searchParams }: Props) {
+  // Middleware zaten engelliyor; sayfa doğrudan render edilebildiği için
+  // yetkiyi burada da doğruluyoruz.
+  const session = await readSession(cookies().get(SESSION_COOKIE)?.value)
+  if (!canEdit(session, params.slug)) redirect('/admin')
+
   const base = getRestaurant(params.slug)
   if (!base) notFound()
 

@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { formatPrice } from '@/lib/format-price'
 import type { MenuSection as MenuSectionType } from '@/lib/menu-data/types'
 import { ItemList } from './ItemList'
 import { MenuCards } from './MenuCards'
@@ -18,8 +19,28 @@ export function MenuSection({ section }: { section: MenuSectionType }) {
         switch (block.kind) {
           case 'note':
             return (
-              <div className="kahvalti-note" key={i}>
-                <b>{block.title}</b>
+              <div
+                className={
+                  block.soldOut ? 'kahvalti-note is-soldout' : 'kahvalti-note'
+                }
+                key={i}
+              >
+                <div className="kahvalti-note-head">
+                  <b>{block.title}</b>
+
+                  {block.soldOut ? (
+                    <span className="item-soldout">Tükendi</span>
+                  ) : block.price ? (
+                    <span className="item-price">
+                      {formatPrice(block.price)}
+                    </span>
+                  ) : (
+                    <span className="item-bars" aria-hidden="true">
+                      <span className="b1" />
+                      <span className="b2" />
+                    </span>
+                  )}
+                </div>
                 {block.body}
               </div>
             )

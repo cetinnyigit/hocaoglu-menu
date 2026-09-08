@@ -33,7 +33,13 @@ export type MenuCard = {
  * sırası her esnaf için serbestçe değiştirilebilir.
  */
 export type MenuBlock =
-  | { kind: 'note'; title: string; body: string }
+  | {
+      kind: 'note'
+      title: string
+      body: string
+      price?: string
+      soldOut?: boolean
+    }
   | { kind: 'cards'; cards: MenuCard[] }
   | { kind: 'photo'; image: MenuImage; spaced?: boolean }
   | { kind: 'group'; title?: string; items: MenuItem[] }

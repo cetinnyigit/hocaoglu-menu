@@ -1,10 +1,15 @@
 import type { Metadata } from 'next'
 import { login } from '../actions'
+import { ownerPassword, restaurantPassword } from '@/lib/auth'
+import { getRestaurantSlugs } from '@/lib/menu-data'
 
 export const metadata: Metadata = {
   title: 'Panel Girişi',
   robots: { index: false, follow: false },
 }
+
+/** Ortam değişkenleri build'de değil, istek anında okunmalı. */
+export const dynamic = 'force-dynamic'
 
 export default function LoginPage({
   searchParams,
@@ -13,8 +18,13 @@ export default function LoginPage({
 }) {
   // Ortam değişkenleri eksikse giriş denemesi 500 ile patlardı; sebebi
   // baştan söylemek deploy sonrası hata ayıklamayı kısaltıyor.
+  // Hiç şifre tanımlı değilse kimse giremez — ne sahip ne de esnaf.
+  const anyPassword =
+    Boolean(ownerPassword()) ||
+    getRestaurantSlugs().some((slug) => Boolean(restaurantPassword(slug)))
+
   const missing = [
-    process.env.ADMIN_PASSWORD ? null : 'ADMIN_PASSWORD',
+    anyPassword ? null : 'ADMIN_PASSWORD veya ADMIN_PASSWORD_<SLUG>',
     (process.env.ADMIN_SESSION_SECRET?.length ?? 0) >= 16
       ? null
       : 'ADMIN_SESSION_SECRET',

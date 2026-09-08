@@ -1,4 +1,4 @@
-import { cardKey, itemKey } from './menu-key'
+import { cardKey, itemKey, noteKey } from './menu-key'
 import type { MenuOverrides, Restaurant } from './menu-data/types'
 
 /**
@@ -14,6 +14,16 @@ export function applyOverrides(
     sections: restaurant.sections.map((section) => ({
       ...section,
       blocks: section.blocks.map((block) => {
+        if (block.kind === 'note') {
+          const override = overrides.items[noteKey(section.id, block.title)]
+          if (!override) return block
+          return {
+            ...block,
+            price: override.price ?? block.price,
+            soldOut: override.soldOut ?? block.soldOut,
+          }
+        }
+
         if (block.kind === 'cards') {
           return {
             ...block,

@@ -48,6 +48,11 @@ export function cardKey(sectionId: string, cardName: string): string {
   return `${sectionId}:cards:${slugify(cardName)}`
 }
 
+/** Not bloğunun kendisi de fiyatlanabilir (ör. "Premium Kahvaltı"). */
+export function noteKey(sectionId: string, noteTitle: string): string {
+  return `${sectionId}:note:${slugify(noteTitle)}`
+}
+
 /**
  * Menüdeki her düzenlenebilir alanı anahtarıyla birlikte düz bir liste
  * hâlinde döndürür. Hem panel formu hem de anahtar çakışması kontrolü
@@ -70,7 +75,16 @@ export function collectEditableEntries(
 
   for (const section of restaurant.sections) {
     for (const block of section.blocks) {
-      if (block.kind === 'cards') {
+      if (block.kind === 'note') {
+        entries.push({
+          key: noteKey(section.id, block.title),
+          name: block.title,
+          sectionId: section.id,
+          sectionLabel: section.navLabel,
+          price: block.price ?? '',
+          soldOut: block.soldOut ?? false,
+        })
+      } else if (block.kind === 'cards') {
         for (const card of block.cards) {
           entries.push({
             key: cardKey(section.id, card.name),

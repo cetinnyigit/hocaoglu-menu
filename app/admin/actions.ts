@@ -4,13 +4,14 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import {
+  OWNER_SCOPE,
   SESSION_COOKIE,
-  adminPassword,
+  canEdit,
   createSession,
-  isValidSession,
-  timingSafeEqual,
+  readSession,
+  resolveScope,
 } from '@/lib/auth'
-import { getRestaurant } from '@/lib/menu-data'
+import { getRestaurant, getRestaurantSlugs } from '@/lib/menu-data'
 import { collectEditableEntries } from '@/lib/menu-key'
 import {
   overridesTag,
@@ -28,14 +29,25 @@ function safeNext(value: FormDataEntryValue | null): string {
 }
 
 export async function login(formData: FormData) {
-  const next = safeNext(formData.get('devam'))
+  const requested = safeNext(formData.get('devam'))
   const entered = String(formData.get('sifre') ?? '')
 
-  if (!timingSafeEqual(entered, adminPassword())) {
-    redirect(`/admin/giris?hata=1&devam=${encodeURIComponent(next)}`)
+  const scope = resolveScope(entered, getRestaurantSlugs())
+  if (!scope) {
+    redirect(`/admin/giris?hata=1&devam=${encodeURIComponent(requested)}`)
   }
 
-  const session = await createSession()
+  // İstenen sayfa bu şifrenin yetkisi dışındaysa (ör. esnaf başkasının
+  // panelinin linkine tıkladı) kendi paneline gönder.
+  const requestedSlug = requested.split('/')[2]
+  const next =
+    !requestedSlug || canEdit({ scope }, requestedSlug)
+      ? requested
+      : scope === OWNER_SCOPE
+        ? '/admin'
+        : `/admin/${scope}`
+
+  const session = await createSession(scope)
   cookies().set(SESSION_COOKIE, session.value, {
     httpOnly: true,
     sameSite: 'lax',
@@ -54,10 +66,12 @@ export async function logout() {
 
 export async function saveMenu(slug: string, formData: FormData) {
   // Middleware zaten koruyor; server action doğrudan da çağrılabildiği için
-  // yetkiyi burada tekrar doğruluyoruz.
-  if (!(await isValidSession(cookies().get(SESSION_COOKIE)?.value))) {
-    redirect('/admin/giris')
-  }
+  // yetkiyi burada tekrar doğruluyoruz. Sadece "giriş yapmış mı" değil,
+  // "bu menüye yetkili mi" — yoksa bir esnaf action'ı elle çağırıp
+  // başkasının fiyatlarını yazabilirdi.
+  const session = await readSession(cookies().get(SESSION_COOKIE)?.value)
+  if (!session) redirect('/admin/giris')
+  if (!canEdit(session, slug)) redirect('/admin')
 
   const restaurant = getRestaurant(slug)
   if (!restaurant) redirect('/admin')

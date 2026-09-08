@@ -2,9 +2,13 @@
 
 NFC kartla açılan dijital esnaf menüleri. Next.js 14 (App Router) + TypeScript + Tailwind.
 
-Canlı sayfa: `/menu/hocaoglu`
+Alan adı: `cetinnyigit.com`. Her esnaf `cetinnyigit.com/menu/<slug>` adresinde
+yayınlanır, kartındaki NFC ve QR bu adrese gider.
 
-Menü sayfası: `/menu/hocaoglu` · Fiyat paneli: `/admin`
+Menü sayfası: `/menu/hocaoglu` · Fiyat paneli: `/admin` · Tanıtım: `/`
+
+Ana sayfa bilinçli olarak tanıtım sayfası — buradan hiçbir müşteri menüsüne
+veya panele bağlantı verilmiyor, müşteriler birbirinin menüsünü görmesin diye.
 
 ## Geliştirme
 
@@ -71,17 +75,30 @@ iki ürün aynı anahtarı üretiyorsa hata verir.
 
 ## Panel
 
-`/admin` — tek ortak şifre ile giriş, 12 saatlik imzalı çerez oturumu.
-Middleware `/admin` altındaki her şeyi korur, `robots.txt` dizine eklenmesini
-engeller.
+`/admin` — şifreyle giriş, 12 saatlik imzalı çerez oturumu. Middleware
+`/admin` altındaki her şeyi korur, `robots.txt` dizine eklenmesini engeller.
+
+**Her esnafın kendi şifresi var.** Girilen şifre oturumun kapsamını belirler
+(`lib/auth.ts`): esnaf şifresiyle girenin çerezinde kendi slug'ı yazar ve
+yalnızca `/admin/<kendi-slug>` açılır. Başkasının paneline gitmeye çalışırsa
+kendi paneline geri döner. Kapsam çerezin imzasının içinde, elle
+değiştirilemez.
 
 Gerekli ortam değişkenleri:
 
 | Değişken | Ne işe yarar |
 | --- | --- |
-| `ADMIN_PASSWORD` | Müşteriye verilecek panel şifresi |
+| `ADMIN_PASSWORD_<SLUG>` | O esnafa verilecek şifre, sadece kendi menüsü |
+| `ADMIN_PASSWORD` | Sahibin ana şifresi, tüm menüler. Müşteriye verilmez |
 | `ADMIN_SESSION_SECRET` | Oturum çerezini imzalar, en az 16 karakter |
 | Blob kimliği | Vercel'de store bağlanınca otomatik gelir, aşağıya bak |
+
+Slug → değişken adı: harfler büyür, tire alt çizgi olur.
+`hocaoglu` → `ADMIN_PASSWORD_HOCAOGLU`,
+`tavuk-dunyasi` → `ADMIN_PASSWORD_TAVUK_DUNYASI`.
+
+Her esnafa farklı şifre ver. Aynı şifreyi iki esnafa verirsen ikisi de listede
+önce gelen menüye düşer.
 
 Blob kimlik doğrulamasının iki yolu var, `lib/menu-store.ts` ikisini de kabul
 eder:
@@ -107,13 +124,28 @@ olduğunu söyleyen bir sayfa gösterir.
 
 ## Yeni esnaf ekleme
 
-1. Fotoğrafları `public/menu/<slug>/` altına koy.
-2. `lib/menu-data/<slug>.ts` oluştur, `hocaoglu.ts`'i şablon al.
-3. `lib/menu-data/index.ts` içindeki `restaurants` dizisine ekle.
+1. Slug seç — **sadece ASCII**: `tavuk-dunyasi`, `tavukdunyası` değil. Türkçe
+   karakter URL'de yüzde kodlamasına dönüşür, QR'da yer kaplar, elle yazılamaz.
+2. Fotoğrafları `public/menu/<slug>/` altına koy.
+3. `lib/menu-data/<slug>.ts` oluştur, `hocaoglu.ts`'i şablon al.
+4. `lib/menu-data/index.ts` içindeki `restaurants` dizisine ekle.
+5. `npm run check:keys` — anahtar çakışması var mı.
+6. Vercel'e `ADMIN_PASSWORD_<SLUG>` ekle, deploy et.
+7. QR üret: `npm run qr -- https://cetinnyigit.com/menu/<slug> <slug>`.
 
 Route otomatik gelir: `/menu/<slug>`. `generateStaticParams` her esnaf için
 build sırasında statik HTML üretir; listede olmayan slug'lar `notFound()` ile
-404 döner. Panel de otomatik olarak yeni esnafı listeler.
+404 döner.
+
+## QR kartlar
+
+`npm run qr -- <url> <ad>` → `qr/<ad>-qr.svg` ve `qr/<ad>-qr.png`.
+
+Matbaaya **SVG**'yi ver. Hata düzeltme seviyesi H (%30), 4 modül sessiz alan.
+En az 2 cm basılmalı, saf siyah/beyaz, mat lamine. Sessiz alan kırpılmamalı.
+
+Basılı adres sonradan değiştirilemez: alan adı değişirse tüm kartlar geçersiz
+olur.
 
 ## Bölüm bloklarına dair
 

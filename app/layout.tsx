@@ -28,7 +28,7 @@ const yellowtail = Yellowtail({
 })
 
 /** Open Graph görsellerinin mutlak URL'e çevrilmesi için gerekli. */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yigitcetin.com.tr'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cetinnyigit.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "check:keys": "tsx scripts/check-menu-keys.ts"
+    "check:keys": "tsx scripts/check-menu-keys.ts",
+    "qr": "tsx scripts/make-qr.ts"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",
@@ -17,11 +18,13 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.23.13",
     "typescript": "^5"
