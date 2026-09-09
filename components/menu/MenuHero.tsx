@@ -16,7 +16,7 @@ export function MenuHero({ restaurant }: { restaurant: Restaurant }) {
         style={{ objectFit: 'cover' }}
       />
       <div className="hero-content">
-        <p className="brand-est">{established}</p>
+        {established ? <p className="brand-est">{established}</p> : null}
         <h1 className="brand-name">{name}</h1>
         <p className="brand-sub">{tagline}</p>
       </div>

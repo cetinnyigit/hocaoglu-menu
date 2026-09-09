@@ -5,7 +5,7 @@ NFC kartla açılan dijital esnaf menüleri. Next.js 14 (App Router) + TypeScrip
 Alan adı: `cetinnyigit.com`. Her esnaf `cetinnyigit.com/menu/<slug>` adresinde
 yayınlanır, kartındaki NFC ve QR bu adrese gider.
 
-Menü sayfası: `/menu/hocaoglu` · Fiyat paneli: `/admin` · Tanıtım: `/`
+Menüler: `/menu/hocaoglu`, `/menu/ay` · Fiyat paneli: `/admin` · Tanıtım: `/`
 
 Ana sayfa bilinçli olarak tanıtım sayfası — buradan hiçbir müşteri menüsüne
 veya panele bağlantı verilmiyor, müşteriler birbirinin menüsünü görmesin diye.
@@ -31,6 +31,7 @@ app/admin/                 Fiyat paneli (şifreli)
 lib/menu-data/             Menü iskeleti — ürün adları, bölümler, temalar
   types.ts                 Ortak veri modeli
   hocaoglu.ts              Hocaoğlu Börek & Cafe menüsü
+  ay.ts                    Ay Döner & Köfte menüsü
   index.ts                 Esnaf kaydı
 lib/menu-store.ts          Fiyat/tükendi deposu (Vercel Blob)
 lib/menu-merge.ts          Kayıtlı değerleri menünün üzerine bindirir
@@ -136,6 +137,18 @@ olduğunu söyleyen bir sayfa gösterir.
 Route otomatik gelir: `/menu/<slug>`. `generateStaticParams` her esnaf için
 build sırasında statik HTML üretir; listede olmayan slug'lar `notFound()` ile
 404 döner.
+
+### Esnafa özel renkler
+
+Varsayılan krem/kahve palet dışına çıkmak gerekirse `globals.css`'e bir
+`.brand-<ad>` sınıfı yazılır ve esnafın veri dosyasında `palette: '<ad>'`
+denir; `/menu/[slug]` sayfası içeriği o sınıfla sarar, değişkenler oradan
+miras alınır. Diğer menüler etkilenmez. Örnek: Ay Döner'in lacivert + sarı
+kimliği (`.brand-ay`, `theme-navy`, `theme-gold`).
+
+`--cream` bilerek sitenin varsayılanıyla aynı bırakıldı: sarmalayıcı div
+sayfanın tamamını kaplamadığı için farklı bir zemin rengi altta dikiş
+gösterir.
 
 ## QR kartlar
 

@@ -27,6 +27,49 @@
   --c-brown-soft: #f1e6d6;
   --c-green: #4a8a5c;
   --c-green-soft: #e6f1e8;
+  --c-navy: #16294f;
+  --c-navy-soft: #e3e7f0;
+  --c-gold: #a97b12;
+  --c-gold-soft: #f7edd4;
+}
+
+/* ============================================================
+   Esnafa özel palet — sayfayı saran .brand-* sınıfı :root'taki
+   zemin/kağıt/metin değişkenlerini ezer, diğer menüler etkilenmez.
+   ============================================================ */
+
+/* Ay Döner & Köfte: tabelasındaki lacivert + sarı kimlik. */
+.brand-ay {
+  /* Zemin bilerek sitenin kremiyle aynı: sarmalayıcı bittiğinde altta kalan
+     body zemini ile arada renk dikişi oluşmasın. Ay'ın kimliği lacivert +
+     sarı vurgulardan geliyor. */
+  --cream: #faf6ee;
+  --paper: #ffffff;
+  --ink: #16223d;
+  --muted: #6b7280;
+  --line: #e4e1d9;
+  /* Kategori çubuğu bu ikisini kullanıyor: pasif yazı ve aktif hap rengi. */
+  --brown: #16294f;
+  --brown-dark: #0e1f45;
+
+  /* Zemin body'den değil buradan geliyor; sayfa kısa olsa da alt boşluk
+     kremin kendisiyle dolsun diye tam ekran yüksekliği veriyoruz. */
+  min-height: 100vh;
+  background: var(--cream);
+}
+.brand-ay .hero::after {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 18, 48, 0.15) 0%,
+    rgba(8, 18, 48, 0.86) 100%
+  );
+}
+.brand-ay .brand-sub {
+  color: #e0c98d;
+}
+/* Footer rozeti varsayılan kırmızı; Ay'da lacivert kimliğe çekiliyor. */
+.brand-ay .footer .vat {
+  background: var(--c-navy);
 }
 
 * {
@@ -304,6 +347,28 @@ body {
 .theme-green .item-bars .b1,
 .theme-green .item-bars .b2 {
   background: var(--c-green);
+}
+
+.theme-navy .script-heading,
+.theme-navy .plain-heading,
+.theme-navy .subgroup-title,
+.theme-navy .item-price {
+  color: var(--c-navy);
+}
+.theme-navy .item-bars .b1,
+.theme-navy .item-bars .b2 {
+  background: var(--c-navy);
+}
+
+.theme-gold .script-heading,
+.theme-gold .plain-heading,
+.theme-gold .subgroup-title,
+.theme-gold .item-price {
+  color: var(--c-gold);
+}
+.theme-gold .item-bars .b1,
+.theme-gold .item-bars .b2 {
+  background: var(--c-gold);
 }
 
 /* headingInk: başlık tema rengi yerine ana metin rengini kullanır */

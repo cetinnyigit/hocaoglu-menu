@@ -4,7 +4,21 @@
  */
 
 /** Bölüm renk temaları — globals.css'teki .theme-* sınıflarına karşılık gelir. */
-export type MenuTheme = 'red' | 'tan' | 'olive' | 'brown' | 'green'
+export type MenuTheme =
+  | 'red'
+  | 'tan'
+  | 'olive'
+  | 'brown'
+  | 'green'
+  | 'navy'
+  | 'gold'
+
+/**
+ * Esnafın genel renk kimliği — globals.css'teki .brand-* sınıfına karşılık
+ * gelir ve zemin/kağıt/metin değişkenlerini ezer. Belirtilmezse sitenin
+ * varsayılan krem paleti kullanılır.
+ */
+export type MenuPalette = 'ay'
 
 export type MenuImage = {
   src: string
@@ -61,8 +75,10 @@ export type Restaurant = {
   slug: string
   name: string
   /** Hero üstündeki küçük büyük harfli satır, ör. "1962'DEN BERİ". */
-  established: string
+  established?: string
   tagline: string
+  /** Varsayılan krem palet yerine esnafa özel renk kimliği. */
+  palette?: MenuPalette
   hero: MenuImage
   sections: MenuSection[]
   footer: {

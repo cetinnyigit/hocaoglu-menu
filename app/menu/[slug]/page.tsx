@@ -55,8 +55,9 @@ export default async function MenuPage({ params }: Props) {
   // Okuma önbellekli olduğu için sayfa statik kalmaya devam eder.
   const restaurant = applyOverrides(base, await readOverrides(params.slug))
 
+  // Esnafa özel palet varsa renk değişkenleri bu sarmalayıcıdan miras alınır.
   return (
-    <>
+    <div className={restaurant.palette ? `brand-${restaurant.palette}` : ''}>
       <MenuHero restaurant={restaurant} />
       <CategoryNav sections={restaurant.sections} />
 
@@ -71,6 +72,6 @@ export default async function MenuPage({ params }: Props) {
         <br />
         <span className="vat">{restaurant.footer.vatNote}</span>
       </div>
-    </>
+    </div>
   )
 }
