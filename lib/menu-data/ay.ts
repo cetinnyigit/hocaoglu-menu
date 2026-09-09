@@ -16,8 +16,8 @@ export const ay: Restaurant = {
   hero: {
     src: '/menu/ay/hero.jpg',
     alt: 'Ay Döner ve Köfte',
-    width: 1400,
-    height: 700,
+    width: 596,
+    height: 335,
   },
   seo: {
     title: 'Ay Döner ve Köfte - Menü',
