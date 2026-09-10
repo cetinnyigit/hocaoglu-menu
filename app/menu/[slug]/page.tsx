@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { CategoryNav } from '@/components/menu/CategoryNav'
 import { MenuHero } from '@/components/menu/MenuHero'
 import { MenuSection } from '@/components/menu/MenuSection'
+import { restaurantUrl } from '@/lib/domains'
 import { getRestaurant, getRestaurantSlugs } from '@/lib/menu-data'
 import { applyOverrides } from '@/lib/menu-merge'
 import { readOverrides } from '@/lib/menu-store'
@@ -35,13 +36,20 @@ export function generateMetadata({ params }: Props): Metadata {
   const restaurant = getRestaurant(params.slug)
   if (!restaurant) return {}
 
+  // Menünün herkese açık tek adresi. Kendi alan adı olan esnafta bu, ana
+  // sitedeki /menu/<slug> değil o alan adının kökü olur — arama motoru aynı
+  // menüyü iki ayrı adres sanmasın.
+  const url = restaurantUrl(params.slug)
+
   return {
     title: restaurant.seo.title,
     description: restaurant.seo.description,
+    alternates: { canonical: url },
     openGraph: {
       title: restaurant.seo.title,
       description: restaurant.seo.description,
-      images: [restaurant.hero.src],
+      url,
+      images: [new URL(restaurant.hero.src, url).toString()],
       type: 'website',
     },
   }

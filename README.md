@@ -2,10 +2,13 @@
 
 NFC kartla açılan dijital esnaf menüleri. Next.js 14 (App Router) + TypeScript + Tailwind.
 
-Alan adı: `cetinnyigit.com`. Her esnaf `cetinnyigit.com/menu/<slug>` adresinde
-yayınlanır, kartındaki NFC ve QR bu adrese gider.
+Ana alan adı: `cetinnyigit.com`. Esnaf varsayılan olarak
+`cetinnyigit.com/menu/<slug>` adresinde yayınlanır; kendi alan adını almış
+esnafta menü o alan adının kökünde açılır (bkz. [Esnafa özel alan adı]
+(#esnafa-özel-alan-adı)).
 
-Menüler: `/menu/hocaoglu`, `/menu/ay` · Fiyat paneli: `/admin` · Tanıtım: `/`
+Menüler: `hocaoglupasta.com` (Hocaoğlu), `/menu/ay` (Ay Döner) ·
+Fiyat paneli: `/admin` · Tanıtım: `/`
 
 Ana sayfa bilinçli olarak tanıtım sayfası — buradan hiçbir müşteri menüsüne
 veya panele bağlantı verilmiyor, müşteriler birbirinin menüsünü görmesin diye.
@@ -132,11 +135,39 @@ olduğunu söyleyen bir sayfa gösterir.
 4. `lib/menu-data/index.ts` içindeki `restaurants` dizisine ekle.
 5. `npm run check:keys` — anahtar çakışması var mı.
 6. Vercel'e `ADMIN_PASSWORD_<SLUG>` ekle, deploy et.
-7. QR üret: `npm run qr -- https://cetinnyigit.com/menu/<slug> <slug>`.
+7. QR üret: `npm run qr -- <slug>` (adresi kendi bulur).
 
 Route otomatik gelir: `/menu/<slug>`. `generateStaticParams` her esnaf için
 build sırasında statik HTML üretir; listede olmayan slug'lar `notFound()` ile
 404 döner.
+
+### Esnafa özel alan adı
+
+Bir esnaf kendi alan adını aldığında menü ayrı bir projeye taşınmaz — aynı
+proje o alan adına da cevap verir. Kod tek yerde kalır, panel ve fiyat deposu
+ortak çalışmaya devam eder.
+
+1. `lib/domains.ts` içindeki `RESTAURANT_DOMAINS`'e bir satır ekle:
+   `hocaoglu: 'hocaoglupasta.com'`. Tek doğruluk kaynağı burasıdır.
+2. Vercel → proje → Settings → Domains → alan adını **bu projeye** ekle
+   (yeni proje açma). `www` varyantını da ekleyip apex'e yönlendir.
+3. Alan adı sağlayıcısında Vercel'in verdiği A / CNAME kaydını gir.
+4. QR'ı yeniden üret: `npm run qr -- <slug>`.
+
+`middleware.ts` gerisini halleder:
+
+| İstek | Sonuç |
+| --- | --- |
+| `hocaoglupasta.com/` | menü (rewrite — adres çubuğunda `/menu/...` görünmez) |
+| `hocaoglupasta.com/menu/*` | `/` → 308 |
+| `hocaoglupasta.com/admin` | panel, normal çalışır |
+| `cetinnyigit.com/menu/hocaoglu` | `https://hocaoglupasta.com` → 308 |
+
+Menünün canonical'ı ve Open Graph adresi de kendi alan adına döner, aynı menü
+arama motoruna iki ayrı adres olarak görünmez.
+
+`lib/domains.ts` middleware'den import edildiği için Edge paketine giriyor —
+oraya menü verisi bağlama, sadece düz eşleme tut.
 
 ### Esnafa özel renkler
 
@@ -152,7 +183,9 @@ gösterir.
 
 ## QR kartlar
 
-`npm run qr -- <url> <ad>` → `qr/<ad>-qr.svg` ve `qr/<ad>-qr.png`.
+`npm run qr -- <slug>` → `qr/<slug>-qr.svg` ve `qr/<slug>-qr.png`. Adres
+`lib/domains.ts`'ten türetilir; kendi alan adı olan esnafta kart o alan adına
+basılır. Adresi elle vermek gerekirse: `npm run qr -- <url> <ad>`.
 
 Matbaaya **SVG**'yi ver. Hata düzeltme seviyesi H (%30), 4 modül sessiz alan.
 En az 2 cm basılmalı, saf siyah/beyaz, mat lamine. Sessiz alan kırpılmamalı.

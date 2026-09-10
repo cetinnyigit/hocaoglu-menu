@@ -1,6 +1,10 @@
 /**
  * Karta bastırmak için QR üretir.
  *
+ * Esnaf slug'ı ver, adresi kendi bulsun (kendi alan adı varsa onu kullanır):
+ *   npm run qr -- hocaoglu
+ *
+ * Ya da adresi elle ver:
  *   npm run qr -- https://ornek.com/menu/hocaoglu hocaoglu
  *
  * İki dosya çıkar (qr/ klasörüne):
@@ -15,6 +19,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import QRCode from 'qrcode'
+import { restaurantUrl } from '../lib/domains'
+import { getRestaurantSlugs } from '../lib/menu-data'
 
 const OPTIONS = {
   errorCorrectionLevel: 'H',
@@ -25,15 +31,28 @@ const OPTIONS = {
 } as const
 
 async function main() {
-  const [url, rawName] = process.argv.slice(2)
+  const [target, rawName] = process.argv.slice(2)
 
-  if (!url) {
+  if (!target) {
     console.error(
-      'Kullanım: npm run qr -- <url> [dosya-adı]\n' +
+      'Kullanım: npm run qr -- <slug|url> [dosya-adı]\n' +
+        'Örnek:    npm run qr -- hocaoglu\n' +
         'Örnek:    npm run qr -- https://ornek.com/menu/hocaoglu hocaoglu',
     )
     process.exit(1)
   }
+
+  // Slug verildiyse adresi lib/domains.ts'ten türet — kendi alan adı olan
+  // esnafta kart o alan adına basılsın, elle yazıp yanlış adres girilmesin.
+  const isUrl = target.includes('://')
+  if (!isUrl && !getRestaurantSlugs().includes(target)) {
+    console.error(
+      `Tanımsız esnaf: ${target}\n` +
+        `Bilinen slug'lar: ${getRestaurantSlugs().join(', ')}`,
+    )
+    process.exit(1)
+  }
+  const url = isUrl ? target : restaurantUrl(target)
 
   try {
     // Yazım hatası olan bir adres kartlara basılmasın.
@@ -50,7 +69,7 @@ async function main() {
     )
   }
 
-  const name = rawName ?? 'menu'
+  const name = rawName ?? (isUrl ? 'menu' : target)
   const outDir = path.join(process.cwd(), 'qr')
   await mkdir(outDir, { recursive: true })
 

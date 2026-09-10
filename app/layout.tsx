@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Poppins, Yellowtail } from 'next/font/google'
+import { SITE_URL } from '@/lib/domains'
 import './globals.css'
 
 /**
@@ -27,11 +28,10 @@ const yellowtail = Yellowtail({
   display: 'swap',
 })
 
-/** Open Graph görsellerinin mutlak URL'e çevrilmesi için gerekli. */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cetinnyigit.com'
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  // Göreli adreslerin mutlak URL'e çevrilmesi için gerekli. Kendi alan adı
+  // olan esnaflar bunu kendi sayfalarında eziyor (bkz. menu/[slug]/page.tsx).
+  metadataBase: new URL(SITE_URL),
   title: 'Menü',
   description: 'Dijital esnaf menüleri',
 }
