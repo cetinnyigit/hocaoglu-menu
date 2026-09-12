@@ -73,9 +73,10 @@ function text(value: FormDataEntryValue | null): string {
 
 /**
  * Görselin adresi tarayıcıdan geliyor, o yüzden doğrulanıyor: yalnızca
- * kendi yükleme uç noktamızın ürettiği iki biçim kabul ediliyor — Blob'un
- * https adresi ya da lokal geliştirmede public/ altındaki yol. Aksi hâlde
- * panele erişen biri menüye dışarıdan görsel bindirebilirdi.
+ * kendi yükleme uç noktamızın ürettiği iki biçim kabul ediliyor — depodaki
+ * görseli servis eden /api/gorsel yolu ya da lokal geliştirmede public/
+ * altındaki yol. Aksi hâlde panele erişen biri menüye dışarıdan görsel
+ * bindirebilirdi.
  */
 function itemImage(
   formData: FormData,
@@ -85,7 +86,7 @@ function itemImage(
   if (!src) return undefined
 
   const allowed =
-    /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//.test(src) ||
+    /^\/api\/gorsel\/[a-z0-9-]+\/[\w.-]+\.jpg$/.test(src) ||
     /^\/menu\/[a-z0-9-]+\/urun\/[\w.-]+$/.test(src)
   if (!allowed) return undefined
 

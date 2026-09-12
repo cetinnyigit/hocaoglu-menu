@@ -74,11 +74,17 @@ function onVercel(): boolean {
 
 // -------------------------------------------------------------- ürün görseli
 
+/** Ürün görsellerinin depodaki klasörü. */
+function imageBlobPath(slug: string, name: string): string {
+  return `menu-images/${slug}/${name}`
+}
+
 /**
  * Panelden yüklenen ürün görselini kalıcı bir adrese yazar ve o adresi döner.
  *
- * Fiyat JSON'u private tutuluyor ama görsel herkese açık olmalı: menüyü açan
- * müşterinin tarayıcısı doğrudan indiriyor.
+ * Depo private: dosyanın herkese açık bir Blob adresi yok. Bu yüzden görsel
+ * müşteriye kendi /api/gorsel/... yolumuz üzerinden veriliyor (bkz. o route).
+ * Depoyu public'e çevirmek fiyat JSON'unu da açardı, istemiyoruz.
  *
  * Dosya adına zaman damgası ekleniyor — aynı ürünün görseli değiştirildiğinde
  * adres de değişsin, CDN'de kalan eski kopya gösterilmesin.
@@ -102,15 +108,39 @@ export async function writeItemImage(
     return writeLocalImage(slug, name, data)
   }
 
-  const result = await put(`menu-images/${slug}/${name}`, data, {
-    access: 'public',
+  await put(imageBlobPath(slug, name), data, {
+    access: ACCESS,
     contentType: 'image/jpeg',
     addRandomSuffix: false,
     allowOverwrite: true,
     ...(auth.token ? { token: auth.token } : {}),
   })
 
-  return result.url
+  return `/api/gorsel/${slug}/${name}`
+}
+
+/**
+ * Depodaki ürün görselini okur. Menüyü açan herkese servis edilecek, bu
+ * yüzden yalnızca içeriği döner; yetki kontrolü yok — görselin kendisi
+ * zaten herkese açık menüde görünüyor.
+ */
+export async function readItemImage(
+  slug: string,
+  name: string,
+): Promise<ReadableStream | null> {
+  const auth = blobAuth()
+  if (!auth) return null
+
+  try {
+    const result = await get(imageBlobPath(slug, name), {
+      access: ACCESS,
+      ...(auth.token ? { token: auth.token } : {}),
+    })
+    if (!result || result.statusCode !== 200) return null
+    return result.stream
+  } catch {
+    return null
+  }
 }
 
 /** Lokal geliştirme: public/ altına yazar, menüde /menu/... yolundan okunur. */
