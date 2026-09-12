@@ -72,6 +72,61 @@ function onVercel(): boolean {
 }
 
 
+// -------------------------------------------------------------- ürün görseli
+
+/**
+ * Panelden yüklenen ürün görselini kalıcı bir adrese yazar ve o adresi döner.
+ *
+ * Fiyat JSON'u private tutuluyor ama görsel herkese açık olmalı: menüyü açan
+ * müşterinin tarayıcısı doğrudan indiriyor.
+ *
+ * Dosya adına zaman damgası ekleniyor — aynı ürünün görseli değiştirildiğinde
+ * adres de değişsin, CDN'de kalan eski kopya gösterilmesin.
+ */
+export async function writeItemImage(
+  slug: string,
+  key: string,
+  data: ArrayBuffer,
+): Promise<string> {
+  const safeKey = key.replace(/[^a-zA-Z0-9-]/g, '_')
+  const name = `${safeKey}-${Date.now()}.jpg`
+  const auth = blobAuth()
+
+  if (!auth) {
+    if (onVercel()) {
+      throw new Error(
+        'Blob deposu bağlı değil, görsel yüklenemez. Vercel projesine bir ' +
+          'Blob store bağla ve yeniden deploy et.',
+      )
+    }
+    return writeLocalImage(slug, name, data)
+  }
+
+  const result = await put(`menu-images/${slug}/${name}`, data, {
+    access: 'public',
+    contentType: 'image/jpeg',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    ...(auth.token ? { token: auth.token } : {}),
+  })
+
+  return result.url
+}
+
+/** Lokal geliştirme: public/ altına yazar, menüde /menu/... yolundan okunur. */
+async function writeLocalImage(
+  slug: string,
+  name: string,
+  data: ArrayBuffer,
+): Promise<string> {
+  const fs = await import('node:fs/promises')
+  const path = await import('node:path')
+  const dir = path.join(process.cwd(), 'public', 'menu', slug, 'urun')
+  await fs.mkdir(dir, { recursive: true })
+  await fs.writeFile(path.join(dir, name), Buffer.from(data))
+  return `/menu/${slug}/urun/${name}`
+}
+
 function parse(raw: string): MenuOverrides {
   const data = JSON.parse(raw) as Partial<MenuOverrides>
   if (data.version !== 1 || typeof data.items !== 'object' || !data.items) {

@@ -7,6 +7,27 @@ import type { Restaurant } from './types'
  * içinde tutuluyor ("Dürüm Et (80gr)"). Ad, panelde kaydedilen fiyatın
  * anahtarını da ürettiği için (lib/menu-key.ts) gramajsız yazılırsa üç ayrı
  * dürümün fiyatı birbirine karışır.
+ *
+ * ÜRÜN GÖRSELİ / İÇERİK / KALORİ: bir ürüne image, desc veya calories
+ * eklendiğinde satır tıklanabilir olur ve büyük görselli detay kartı açılır.
+ * (size tek başına satırda görünür, kart açmaz.)
+ * Görseller public/menu/ay/urun/<ürün>.jpg altına konur. Örnek:
+ *
+ *   {
+ *     name: 'İskender Et (120gr)',
+ *     price: '550',
+ *     image: {
+ *       src: '/menu/ay/urun/iskender-et.jpg',
+ *       alt: 'İskender Et',
+ *       width: 1200,
+ *       height: 900,
+ *     },
+ *     desc: 'Döner et, tereyağlı domates sos, yoğurt ve pide.',
+ *     calories: 780,
+ *   }
+ *
+ * Dördü de isteğe bağlı; kalori ölçümleri geldikçe ürün ürün eklenebilir,
+ * eksik olanlarda kart o satırı hiç göstermez.
  */
 export const ay: Restaurant = {
   slug: 'ay',
@@ -23,6 +44,18 @@ export const ay: Restaurant = {
     title: 'Ay Döner ve Köfte - Menü',
     description:
       'Ay Döner ve Köfte menüsü: et ve tavuk dönerler, köfte, ızgara, çorba, ara sıcaklar, tatlılar ve içecekler.',
+  },
+  // Menünün en altındaki iletişim bloğu. Çalışma saatleri esnaftan
+  // gelmedi; hours eklenince o satır kendiliğinden görünür.
+  contact: {
+    address: 'Velibaba Mah. Ankara Cad. No:104, Pendik / İstanbul',
+    phones: ['0552 379 80 81', '0216 379 80 81'],
+    instagram: 'ay.doner.kofte',
+    mapsUrl:
+      'https://www.google.com/maps/search/?api=1&query=' +
+      encodeURIComponent(
+        'Velibaba Mahallesi Ankara Caddesi No:104 Pendik İstanbul',
+      ),
   },
   footer: {
     text: 'Ay Döner & Köfte · Tüm yemek kartları geçerlidir',
@@ -190,12 +223,16 @@ export const ay: Restaurant = {
         {
           kind: 'group',
           items: [
-            { name: 'Pepsi - Yedigün', price: '70' },
-            { name: 'Ayran', price: '50' },
-            { name: 'Açık Ayran', price: '80' },
-            { name: 'Cappy', price: '70' },
-            { name: 'Ice Tea', price: '70' },
-            { name: 'Şalgam', price: '50' },
+            // Ölçüler ürün adına değil size alanına yazılıyor; ad panelde
+            // kayıtlı fiyatın anahtarı, değiştirilirse fiyat düşer.
+            // Su fiyatı esnaftan gelmedi; panelden doldurulacak.
+            { name: 'Su', price: '', size: '500 ml' },
+            { name: 'Pepsi - Yedigün', price: '70', size: '330 ml kutu' },
+            { name: 'Ayran', price: '50', size: '270 ml' },
+            { name: 'Açık Ayran', price: '80', size: '400 ml' },
+            { name: 'Cappy', price: '70', size: '330 ml kutu' },
+            { name: 'Ice Tea', price: '70', size: '330 ml kutu' },
+            { name: 'Şalgam', price: '50', size: '300 ml' },
             { name: 'Meyveli Soda', price: '35' },
             { name: 'Sade Soda', price: '30' },
             { name: 'Çay', price: '20' },

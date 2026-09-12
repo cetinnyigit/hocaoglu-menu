@@ -3,6 +3,10 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { logout, saveMenu } from '../actions'
+import {
+  ItemDetailFields,
+  type ItemImage,
+} from '@/components/admin/ItemDetailFields'
 import { SESSION_COOKIE, canEdit, readSession } from '@/lib/auth'
 import { getRestaurant } from '@/lib/menu-data'
 import { cardKey, itemKey, noteKey } from '@/lib/menu-key'
@@ -22,7 +26,18 @@ type Props = {
   searchParams: { kaydedildi?: string; hata?: string }
 }
 
-type Row = { key: string; name: string; price: string; soldOut: boolean }
+type Row = {
+  key: string
+  name: string
+  price: string
+  soldOut: boolean
+  /**
+   * Fotoğraf/içerik/kalori yalnızca ürün listelerinde düzenlenebiliyor.
+   * Kahvaltı tabaklarının açıklaması ve fiyatlı notlar menüde zaten metinle
+   * geliyor; panelde ikinci bir açıklama alanı kafa karıştırırdı.
+   */
+  detail?: { desc: string; calories: string; image: ItemImage | null }
+}
 type Group = { label?: string; rows: Row[] }
 type Block = { sectionId: string; sectionLabel: string; groups: Group[] }
 
@@ -65,6 +80,17 @@ function buildBlocks(
             name: item.name,
             price: item.price ?? '',
             soldOut: item.soldOut ?? false,
+            detail: {
+              desc: item.desc ?? '',
+              calories: item.calories ? String(item.calories) : '',
+              image: item.image
+                ? {
+                    src: item.image.src,
+                    width: item.image.width,
+                    height: item.image.height,
+                  }
+                : null,
+            },
           })),
         })
       }
@@ -143,6 +169,14 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
         gösterilir ve fiyatı gizlenir.
       </p>
 
+      <p className="admin-hint">
+        <b>Fotoğraf ve içerik</b> satırına dokununca ürünün fotoğrafını,
+        içindekilerini ve kalorisini girebilirsin. Fotoğrafı olan ürün menüde
+        küçük resimle çıkar; müşteri dokununca fotoğraf büyür ve yazdıkların
+        görünür. Hepsi isteğe bağlı — boş bıraktığın alan menüde hiç
+        görünmez. Değişiklikler en alttaki <b>Kaydet</b> ile kalıcı olur.
+      </p>
+
       <form action={save}>
         {blocks.map((block) => (
           <section className="admin-section" key={block.sectionId}>
@@ -181,6 +215,19 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
                         />
                         <span>Tükendi</span>
                       </label>
+
+                      {row.detail ? (
+                        <div className="admin-row-detail">
+                          <ItemDetailFields
+                            slug={params.slug}
+                            itemKey={row.key}
+                            name={row.name}
+                            desc={row.detail.desc}
+                            calories={row.detail.calories}
+                            image={row.detail.image}
+                          />
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                 </div>

@@ -27,7 +27,32 @@ export type MenuImage = {
   height: number
 }
 
-export type MenuItem = {
+/**
+ * Ürünün detay kartında gösterilen ek bilgiler. Hepsi isteğe bağlı — biri
+ * bile doluysa satır tıklanabilir olur ve büyük görselli kart açılır.
+ *
+ * Kalori bilgisi bilerek ayrı ve isteğe bağlı: esnaf ölçümleri yaptıkça
+ * ürün ürün eklenebilir, eksik olanlarda kart kalori satırını gizler.
+ */
+export type MenuItemDetail = {
+  /** Detay kartında büyük, satırda küçük kare olarak gösterilir. */
+  image?: MenuImage
+  /** İçindekiler / hazırlanış. Kartın gövde metni. */
+  desc?: string
+  /**
+   * Porsiyon bilgisi. Ürün adında gramaj yazan dönerlerde boş bırakılır;
+   * içecek gibi adında ölçü olmayan ürünlerde kullanılır ("330 ml").
+   *
+   * DİKKAT: ölçüyü ürün adına yazmak yerine bu alan var, çünkü ad panelde
+   * kaydedilen fiyatın anahtarını üretiyor (lib/menu-key.ts) — adı
+   * değiştirmek o ürünün kayıtlı fiyatını düşürür.
+   */
+  size?: string
+  /** kcal. Porsiyon başına; 0 ile boş ayırt edilebilsin diye number. */
+  calories?: number
+}
+
+export type MenuItem = MenuItemDetail & {
   name: string
   /** Boş bırakılırsa fiyat yerine renkli çubuk placeholder gösterilir. */
   price?: string
@@ -40,6 +65,22 @@ export type MenuCard = {
   desc: string
   price?: string
   soldOut?: boolean
+}
+
+/**
+ * Menünün en altındaki iletişim bloğu. Tamamı isteğe bağlı; yalnızca dolu
+ * alanlar gösterilir, hiçbiri yoksa blok hiç basılmaz.
+ */
+export type MenuContact = {
+  address?: string
+  /** Tıklanınca arama başlatılır; yazıldığı gibi gösterilir. Birden çok olabilir. */
+  phones?: string[]
+  /** Başındaki @ olmadan kullanıcı adı, ör. 'aydonerkofte'. */
+  instagram?: string
+  /** Çalışma saatleri, tek satır: "Her gün 10:00 - 23:00". */
+  hours?: string
+  /** Adresin tıklanabilir olması için harita bağlantısı. */
+  mapsUrl?: string
 }
 
 /**
@@ -81,6 +122,8 @@ export type Restaurant = {
   palette?: MenuPalette
   hero: MenuImage
   sections: MenuSection[]
+  /** Menünün en altında gösterilir; tanımsızsa blok basılmaz. */
+  contact?: MenuContact
   footer: {
     text: string
     vatNote: string
@@ -99,6 +142,18 @@ export type Restaurant = {
 export type ItemOverride = {
   price?: string
   soldOut?: boolean
+  /** Panelden yazılan içerik metni; koddaki desc'i ezer. */
+  desc?: string
+  calories?: number
+  /**
+   * Panelden yüklenen ürün görseli. alt metni ürün adından türetildiği için
+   * burada tutulmuyor — ad değişirse alt da kendiliğinden doğru kalsın.
+   */
+  image?: {
+    src: string
+    width: number
+    height: number
+  }
 }
 
 export type MenuOverrides = {

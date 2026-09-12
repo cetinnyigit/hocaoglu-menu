@@ -64,6 +64,39 @@ export async function logout() {
   redirect('/admin/giris')
 }
 
+/** Panelde içerik metni için üst sınır; ItemDetailFields ile aynı. */
+const DESC_MAX = 400
+
+function text(value: FormDataEntryValue | null): string {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+/**
+ * Görselin adresi tarayıcıdan geliyor, o yüzden doğrulanıyor: yalnızca
+ * kendi yükleme uç noktamızın ürettiği iki biçim kabul ediliyor — Blob'un
+ * https adresi ya da lokal geliştirmede public/ altındaki yol. Aksi hâlde
+ * panele erişen biri menüye dışarıdan görsel bindirebilirdi.
+ */
+function itemImage(
+  formData: FormData,
+  key: string,
+): ItemOverride['image'] | undefined {
+  const src = text(formData.get(`gorsel:${key}`))
+  if (!src) return undefined
+
+  const allowed =
+    /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//.test(src) ||
+    /^\/menu\/[a-z0-9-]+\/urun\/[\w.-]+$/.test(src)
+  if (!allowed) return undefined
+
+  const width = Number(text(formData.get(`gorselg:${key}`)))
+  const height = Number(text(formData.get(`gorsely:${key}`)))
+  if (!Number.isInteger(width) || width <= 0) return undefined
+  if (!Number.isInteger(height) || height <= 0) return undefined
+
+  return { src, width, height }
+}
+
 export async function saveMenu(slug: string, formData: FormData) {
   // Middleware zaten koruyor; server action doğrudan da çağrılabildiği için
   // yetkiyi burada tekrar doğruluyoruz. Sadece "giriş yapmış mı" değil,
@@ -89,6 +122,17 @@ export async function saveMenu(slug: string, formData: FormData) {
     const override: ItemOverride = {}
     if (price) override.price = price.slice(0, 24)
     if (soldOut) override.soldOut = true
+
+    const desc = text(formData.get(`aciklama:${entry.key}`))
+    if (desc) override.desc = desc.slice(0, DESC_MAX)
+
+    const calories = Number(text(formData.get(`kalori:${entry.key}`)))
+    if (Number.isInteger(calories) && calories > 0 && calories <= 9999) {
+      override.calories = calories
+    }
+
+    const image = itemImage(formData, entry.key)
+    if (image) override.image = image
 
     // Boş alanları yazmıyoruz; JSON gereksiz şişmesin ve "değer yok"
     // durumu koddaki varsayılana düşsün.

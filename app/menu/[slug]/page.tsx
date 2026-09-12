@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { CategoryNav } from '@/components/menu/CategoryNav'
+import { MenuContact } from '@/components/menu/MenuContact'
 import { MenuHero } from '@/components/menu/MenuHero'
 import { MenuSection } from '@/components/menu/MenuSection'
 import { restaurantUrl } from '@/lib/domains'
@@ -73,6 +74,10 @@ export default async function MenuPage({ params }: Props) {
         {restaurant.sections.map((section) => (
           <MenuSection section={section} key={section.id} />
         ))}
+
+        {restaurant.contact ? (
+          <MenuContact contact={restaurant.contact} />
+        ) : null}
       </div>
 
       <div className="footer">

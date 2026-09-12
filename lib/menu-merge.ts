@@ -50,6 +50,13 @@ export function applyOverrides(
                 ...item,
                 price: override.price ?? item.price,
                 soldOut: override.soldOut ?? item.soldOut,
+                desc: override.desc ?? item.desc,
+                calories: override.calories ?? item.calories,
+                // alt metni burada üretiliyor: panel yalnızca dosyayı ve
+                // ölçüsünü biliyor, ürünün adını bu birleştirme biliyor.
+                image: override.image
+                  ? { ...override.image, alt: item.name }
+                  : item.image,
               }
             }),
           }
