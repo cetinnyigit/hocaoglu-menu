@@ -23,6 +23,14 @@ export const hocaoglu: Restaurant = {
     description:
       "1962'den beri Hocaoğlu Börek & Cafe. Kahvaltı, börek, pide, tost, makarna, tatlı ve içecek menüsü.",
   },
+  // Açık adres metni ve çalışma saatleri esnaftan gelmedi; adres satırı
+  // şimdilik harita bağlantısı olarak duruyor. address/hours eklenince
+  // kendiliğinden metne döner.
+  contact: {
+    phones: ['0216 375 37 37'],
+    instagram: 'hocaoglupasta',
+    mapsUrl: 'https://maps.app.goo.gl/WSeHZ1zfe2QgqZ5r8',
+  },
   footer: {
     text: "Hocaoğlu Börek & Cafe · 1962'den beri",
     vatNote: 'Fiyatlarımıza KDV dahildir',

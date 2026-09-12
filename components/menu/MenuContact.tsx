@@ -13,14 +13,18 @@ function telHref(phone: string): string {
 export function MenuContact({ contact }: { contact: MenuContactType }) {
   const { address, phones, instagram, hours, mapsUrl } = contact
   const phoneList = phones?.filter(Boolean) ?? []
-  if (!address && phoneList.length === 0 && !instagram && !hours) return null
+  if (!address && !mapsUrl && phoneList.length === 0 && !instagram && !hours) {
+    return null
+  }
 
   return (
     <section className="contact" aria-label="İletişim">
       <h2 className="contact-title">İletişim</h2>
 
       <div className="contact-rows">
-        {address ? (
+        {/* Açık adres yazılmadıysa satır yine de durur, yalnızca harita
+            bağlantısı gösterilir — müşteri yol tarifini yine alabilsin. */}
+        {address || mapsUrl ? (
           <div className="contact-row">
             <span className="contact-label">Adres</span>
             {mapsUrl ? (
@@ -30,7 +34,7 @@ export function MenuContact({ contact }: { contact: MenuContactType }) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {address}
+                {address ?? 'Google Haritalar’da aç'}
               </a>
             ) : (
               <span className="contact-value">{address}</span>
