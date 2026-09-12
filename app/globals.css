@@ -471,6 +471,36 @@ button.item-row:last-child {
   border-radius: 12px;
   padding: 14px 16px;
 }
+/* Detayı olan tabaklarda kart bir <button>; düz kartla aynı görünsün. */
+button.kahvalti-card {
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.kahvalti-card.is-clickable {
+  cursor: pointer;
+}
+.kahvalti-card.is-clickable:active {
+  background: var(--cream);
+}
+/* Fotoğraf + metin solda; fiyat sağda kalmaya devam ediyor. */
+.kahvalti-card-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.kahvalti-thumb {
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--cream);
+}
 .kahvalti-card .name {
   font-weight: 700;
   font-size: 15.5px;

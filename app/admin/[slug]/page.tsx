@@ -12,6 +12,7 @@ import { getRestaurant } from '@/lib/menu-data'
 import { cardKey, itemKey, noteKey } from '@/lib/menu-key'
 import { applyOverrides } from '@/lib/menu-merge'
 import { isBlobConfigured, readOverridesFresh } from '@/lib/menu-store'
+import type { MenuCard, MenuItem } from '@/lib/menu-data/types'
 
 export const metadata: Metadata = {
   title: 'Menü Paneli',
@@ -32,14 +33,29 @@ type Row = {
   price: string
   soldOut: boolean
   /**
-   * Fotoğraf/içerik/kalori yalnızca ürün listelerinde düzenlenebiliyor.
-   * Kahvaltı tabaklarının açıklaması ve fiyatlı notlar menüde zaten metinle
-   * geliyor; panelde ikinci bir açıklama alanı kafa karıştırırdı.
+   * Fotoğraf/içerik/kalori ürün satırlarında ve kahvaltı tabaklarında
+   * düzenlenebiliyor. Fiyatlı notlarda yok: notun gövdesi zaten uzun bir
+   * açıklama metni, panelde ikinci bir açıklama alanı kafa karıştırırdı.
    */
   detail?: { desc: string; calories: string; image: ItemImage | null }
 }
 type Group = { label?: string; rows: Row[] }
 type Block = { sectionId: string; sectionLabel: string; groups: Group[] }
+
+/** Menüdeki ürünün detay alanlarını form için metne çevirir. */
+function toDetail(item: MenuItem | MenuCard): Row['detail'] {
+  return {
+    desc: item.desc ?? '',
+    calories: item.calories ? String(item.calories) : '',
+    image: item.image
+      ? {
+          src: item.image.src,
+          width: item.image.width,
+          height: item.image.height,
+        }
+      : null,
+  }
+}
 
 /** Menü yapısını panel formunun ihtiyaç duyduğu düz satırlara çevirir. */
 function buildBlocks(
@@ -70,6 +86,7 @@ function buildBlocks(
             name: card.name,
             price: card.price ?? '',
             soldOut: card.soldOut ?? false,
+            detail: toDetail(card),
           })),
         })
       } else if (block.kind === 'group') {
@@ -80,17 +97,7 @@ function buildBlocks(
             name: item.name,
             price: item.price ?? '',
             soldOut: item.soldOut ?? false,
-            detail: {
-              desc: item.desc ?? '',
-              calories: item.calories ? String(item.calories) : '',
-              image: item.image
-                ? {
-                    src: item.image.src,
-                    width: item.image.width,
-                    height: item.image.height,
-                  }
-                : null,
-            },
+            detail: toDetail(item),
           })),
         })
       }

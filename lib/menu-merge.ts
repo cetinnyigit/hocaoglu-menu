@@ -34,6 +34,11 @@ export function applyOverrides(
                 ...card,
                 price: override.price ?? card.price,
                 soldOut: override.soldOut ?? card.soldOut,
+                desc: override.desc ?? card.desc,
+                calories: override.calories ?? card.calories,
+                image: override.image
+                  ? { ...override.image, alt: card.name }
+                  : card.image,
               }
             }),
           }

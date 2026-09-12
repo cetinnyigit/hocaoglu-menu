@@ -60,7 +60,11 @@ export type MenuItem = MenuItemDetail & {
   soldOut?: boolean
 }
 
-export type MenuCard = {
+/**
+ * Kahvaltı tabağı. Ürün satırlarından farkı açıklamanın kartta hep görünür
+ * olması; fotoğraf ve kalori ürün satırlarındaki gibi panelden eklenir.
+ */
+export type MenuCard = MenuItemDetail & {
   name: string
   desc: string
   price?: string
