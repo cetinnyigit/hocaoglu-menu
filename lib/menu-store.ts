@@ -1,6 +1,6 @@
 import { get, put } from '@vercel/blob'
 import { unstable_cache } from 'next/cache'
-import type { ItemOverride, MenuOverrides } from './menu-data/types'
+import type { AddedItem, ItemOverride, MenuOverrides } from './menu-data/types'
 
 /**
  * Panelden kaydedilen fiyat/tükendi bilgisinin deposu.
@@ -19,6 +19,7 @@ const EMPTY: MenuOverrides = {
   version: 1,
   updatedAt: new Date(0).toISOString(),
   items: {},
+  added: [],
 }
 
 function blobPath(slug: string): string {
@@ -157,6 +158,27 @@ async function writeLocalImage(
   return `/menu/${slug}/urun/${name}`
 }
 
+/**
+ * Eklenen ürünler listesi sonradan geldi: daha önce yazılmış dosyalarda bu
+ * alan hiç yok, o yüzden eksikliği hata değil. Bozuk kayıtları tek tek
+ * eliyoruz — yarım bir kayıt yüzünden tüm menü fiyatsız kalmasın.
+ */
+function parseAdded(value: unknown): AddedItem[] {
+  if (!Array.isArray(value)) return []
+
+  return value.filter((entry): entry is AddedItem => {
+    if (!entry || typeof entry !== 'object') return false
+    const e = entry as Partial<AddedItem>
+    return (
+      typeof e.key === 'string' &&
+      typeof e.section === 'string' &&
+      typeof e.group === 'string' &&
+      typeof e.name === 'string' &&
+      e.key.length > 0
+    )
+  })
+}
+
 function parse(raw: string): MenuOverrides {
   const data = JSON.parse(raw) as Partial<MenuOverrides>
   if (data.version !== 1 || typeof data.items !== 'object' || !data.items) {
@@ -167,6 +189,7 @@ function parse(raw: string): MenuOverrides {
     version: 1,
     updatedAt: data.updatedAt ?? EMPTY.updatedAt,
     items: data.items,
+    added: parseAdded(data.added),
   }
 }
 
@@ -247,7 +270,10 @@ const OVERRIDES_TTL_SECONDS = 60
 export function readOverrides(slug: string): Promise<MenuOverrides> {
   return unstable_cache(
     () => readOverridesFresh(slug),
-    ['menu-overrides', slug],
+    // Sürüm eki: kayıt biçimi değiştiğinde (ör. added alanı eklendiğinde)
+    // önceki deploy'un build cache'inde kalan eski şekilli sonuç
+    // kullanılmasın. Biçim değişirse bu sayıyı artır.
+    ['menu-overrides', 'v2', slug],
     { tags: [overridesTag(slug)], revalidate: OVERRIDES_TTL_SECONDS },
   )()
 }
@@ -255,11 +281,13 @@ export function readOverrides(slug: string): Promise<MenuOverrides> {
 export async function writeOverrides(
   slug: string,
   items: Record<string, ItemOverride>,
+  added: AddedItem[],
 ): Promise<MenuOverrides> {
   const data: MenuOverrides = {
     version: 1,
     updatedAt: new Date().toISOString(),
     items,
+    added,
   }
 
   const auth = blobAuth()

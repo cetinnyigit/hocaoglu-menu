@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server'
 import { SESSION_COOKIE, canEdit, readSession } from '@/lib/auth'
 import { getRestaurant } from '@/lib/menu-data'
 import { collectEditableEntries } from '@/lib/menu-key'
-import { writeItemImage } from '@/lib/menu-store'
+import { applyOverrides } from '@/lib/menu-merge'
+import { readOverridesFresh, writeItemImage } from '@/lib/menu-store'
 
 /**
  * Panelden ürün görseli yükleme.
@@ -41,7 +42,12 @@ export async function POST(request: Request) {
   if (!restaurant) return bad('Menü bulunamadı', 404)
 
   // Formdan gelen anahtara güvenmiyoruz: menüde gerçekten var olmalı.
-  const known = collectEditableEntries(restaurant).some((e) => e.key === key)
+  // Panelden eklenen ürünler kodda değil depoda; onlar da sayılsın diye
+  // kontrol birleştirilmiş menü üzerinden yapılıyor.
+  const overrides = await readOverridesFresh(slug)
+  const known = collectEditableEntries(
+    applyOverrides(restaurant, overrides),
+  ).some((e) => e.key === key)
   if (!known) return bad('Ürün bulunamadı')
 
   const file = form.get('dosya')

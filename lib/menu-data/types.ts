@@ -58,6 +58,13 @@ export type MenuItem = MenuItemDetail & {
   price?: string
   /** Panelden işaretlenir; menüde soluk gösterilir. */
   soldOut?: boolean
+  /**
+   * Yalnızca panelden eklenen ürünlerde dolu. Kodda yazılı ürünlerin
+   * anahtarı bölüm + grup + addan türer (lib/menu-key.ts); eklenen ürünün
+   * adı panelden değiştirilebildiği için anahtarı addan bağımsız olmalı,
+   * yoksa ad düzeltmesi kayıtlı fiyatı düşürürdü.
+   */
+  key?: string
 }
 
 /**
@@ -69,6 +76,8 @@ export type MenuCard = MenuItemDetail & {
   desc: string
   price?: string
   soldOut?: boolean
+  /** Panelden eklenen tabaklarda sabit anahtar; bkz. MenuItem.key. */
+  key?: string
 }
 
 /**
@@ -160,9 +169,28 @@ export type ItemOverride = {
   }
 }
 
+/**
+ * Panelden eklenen ürün. Yalnızca "nerede duracağı" ve adı burada tutulur;
+ * fiyatı, içeriği, fotoğrafı diğer ürünlerle aynı yerde — items[key].
+ *
+ * Menü verisi kodda kalmaya devam ediyor: esnafın eklediği ürün render
+ * sırasında hedef grubun sonuna ekleniyor (lib/menu-merge.ts).
+ */
+export type AddedItem = {
+  /** lib/menu-key.ts içindeki newItemKey üretimi; addan bağımsız. */
+  key: string
+  /** MenuSection.id */
+  section: string
+  /** Hedef bloğun grup kimliği: slugify(başlık) | 'main' | 'cards'. */
+  group: string
+  name: string
+}
+
 export type MenuOverrides = {
   version: 1
   updatedAt: string
   /** Anahtar: lib/menu-key.ts içindeki itemKey/cardKey üretimi. */
   items: Record<string, ItemOverride>
+  /** Esnafın panelden eklediği ürünler. */
+  added: AddedItem[]
 }

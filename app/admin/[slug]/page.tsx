@@ -9,7 +9,7 @@ import {
 } from '@/components/admin/ItemDetailFields'
 import { SESSION_COOKIE, canEdit, readSession } from '@/lib/auth'
 import { getRestaurant } from '@/lib/menu-data'
-import { cardKey, itemKey, noteKey } from '@/lib/menu-key'
+import { blockGroupId, cardKey, itemKey, noteKey } from '@/lib/menu-key'
 import { applyOverrides } from '@/lib/menu-merge'
 import { isBlobConfigured, readOverridesFresh } from '@/lib/menu-store'
 import type { MenuCard, MenuItem } from '@/lib/menu-data/types'
@@ -32,6 +32,8 @@ type Row = {
   name: string
   price: string
   soldOut: boolean
+  /** Panelden eklenen ürün: adı değiştirilebilir, silinebilir. */
+  added: boolean
   /**
    * Fotoğraf/içerik/kalori ürün satırlarında ve kahvaltı tabaklarında
    * düzenlenebiliyor. Fiyatlı notlarda yok: notun gövdesi zaten uzun bir
@@ -39,7 +41,8 @@ type Row = {
    */
   detail?: { desc: string; calories: string; image: ItemImage | null }
 }
-type Group = { label?: string; rows: Row[] }
+/** target: yeni ürünün ekleneceği hedef (bolum:grup). Yoksa ekleme kapalı. */
+type Group = { label?: string; target?: string; rows: Row[] }
 type Block = { sectionId: string; sectionLabel: string; groups: Group[] }
 
 /** Menüdeki ürünün detay alanlarını form için metne çevirir. */
@@ -67,6 +70,10 @@ function buildBlocks(
     const groups: Group[] = []
 
     for (const block of section.blocks) {
+      // Ürün eklenebilen bloklarda hedef; fotoğraf/not bloklarında yok.
+      const groupId = blockGroupId(block)
+      const target = groupId ? `${section.id}:${groupId}` : undefined
+
       if (block.kind === 'note') {
         groups.push({
           rows: [
@@ -75,28 +82,33 @@ function buildBlocks(
               name: block.title,
               price: block.price ?? '',
               soldOut: block.soldOut ?? false,
+              added: false,
             },
           ],
         })
       } else if (block.kind === 'cards') {
         groups.push({
           label: 'Kahvaltı tabakları',
+          target,
           rows: block.cards.map((card) => ({
-            key: cardKey(section.id, card.name),
+            key: card.key ?? cardKey(section.id, card.name),
             name: card.name,
             price: card.price ?? '',
             soldOut: card.soldOut ?? false,
+            added: Boolean(card.key),
             detail: toDetail(card),
           })),
         })
       } else if (block.kind === 'group') {
         groups.push({
           label: block.title,
+          target,
           rows: block.items.map((item) => ({
-            key: itemKey(section.id, block.title, item.name),
+            key: item.key ?? itemKey(section.id, block.title, item.name),
             name: item.name,
             price: item.price ?? '',
             soldOut: item.soldOut ?? false,
+            added: Boolean(item.key),
             detail: toDetail(item),
           })),
         })
@@ -127,6 +139,18 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
     (sum, block) => sum + block.groups.reduce((n, g) => n + g.rows.length, 0),
     0,
   )
+
+  /**
+   * Eklenen ama menüde yeri kalmamış ürünler: bölümü koddan kaldırılmışsa
+   * hiçbir gruba yerleşemez (bkz. lib/menu-merge.ts). Listelenmezlerse
+   * depoda kalır ve silinemezlerdi.
+   */
+  const shown = new Set(
+    blocks.flatMap((block) =>
+      block.groups.flatMap((group) => group.rows.map((row) => row.key)),
+    ),
+  )
+  const orphans = overrides.added.filter((entry) => !shown.has(entry.key))
 
   const save = saveMenu.bind(null, params.slug)
 
@@ -184,6 +208,15 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
         görünmez. Değişiklikler en alttaki <b>Kaydet</b> ile kalıcı olur.
       </p>
 
+      <p className="admin-hint">
+        <b>Yeni ürün eklemek</b> için her listenin altındaki kutuya adı yazıp
+        <b> Ekle</b>&apos;ye bas; ürün o listenin sonuna gelir, fiyatını ve
+        fotoğrafını sonra girebilirsin. Eklediğin ürünün adını değiştirebilir,
+        <b> Sil</b> kutusunu işaretleyip Kaydet&apos;e basarak menüden
+        çıkarabilirsin. Kodda yazılı ürünler silinemez — onları menüden
+        kaldırmak için &quot;Tükendi&quot; işaretle.
+      </p>
+
       <form action={save}>
         {blocks.map((block) => (
           <section className="admin-section" key={block.sectionId}>
@@ -197,10 +230,30 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
 
                 <div className="admin-rows">
                   {group.rows.map((row) => (
-                    <div className="admin-row" key={row.key}>
-                      <label className="admin-row-name" htmlFor={`fiyat:${row.key}`}>
-                        {row.name}
-                      </label>
+                    <div
+                      className={
+                        row.added ? 'admin-row admin-row-added' : 'admin-row'
+                      }
+                      key={row.key}
+                    >
+                      {row.added ? (
+                        // Eklenen üründe ad da düzenlenebilir: anahtarı addan
+                        // bağımsız olduğu için yazım hatası düzeltilince
+                        // fiyatı ve fotoğrafı yerinde kalır.
+                        <input
+                          className="admin-input admin-name"
+                          name={`ad:${row.key}`}
+                          type="text"
+                          defaultValue={row.name}
+                          maxLength={60}
+                          aria-label="Ürün adı"
+                          autoComplete="off"
+                        />
+                      ) : (
+                        <label className="admin-row-name" htmlFor={`fiyat:${row.key}`}>
+                          {row.name}
+                        </label>
+                      )}
 
                       <input
                         className="admin-price"
@@ -223,6 +276,15 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
                         <span>Tükendi</span>
                       </label>
 
+                      {row.added ? (
+                        // Silme de tek adımda değil, Kaydet'e basılınca
+                        // oluyor — yanlış dokunuş ürünü anında götürmesin.
+                        <label className="admin-soldout admin-remove">
+                          <input type="checkbox" name={`sil:${row.key}`} />
+                          <span>Sil</span>
+                        </label>
+                      ) : null}
+
                       {row.detail ? (
                         <div className="admin-row-detail">
                           <ItemDetailFields
@@ -237,11 +299,51 @@ export default async function AdminEditorPage({ params, searchParams }: Props) {
                       ) : null}
                     </div>
                   ))}
+
+                  {group.target ? (
+                    <div className="admin-row admin-row-new">
+                      <input
+                        className="admin-input"
+                        name={`yeniad:${group.target}`}
+                        type="text"
+                        placeholder="Yeni ürün adı"
+                        maxLength={60}
+                        aria-label="Yeni ürün adı"
+                        autoComplete="off"
+                      />
+                      {/* Ayrı bir aksiyon değil, formun kendi Kaydet'i:
+                          "Ekle" yalnızca kutunun yanında duran bir kısayol. */}
+                      <button className="admin-add" type="submit">
+                        Ekle
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))}
           </section>
         ))}
+
+        {orphans.length > 0 ? (
+          <section className="admin-section">
+            <h2 className="admin-section-title">Yeri kalmamış ürünler</h2>
+            <p className="admin-hint">
+              Bu ürünlerin ekleneceği bölüm menüden kaldırılmış, şu an menüde
+              görünmüyorlar. İşaretleyip Kaydet ile silebilirsin.
+            </p>
+            <div className="admin-rows">
+              {orphans.map((entry) => (
+                <div className="admin-row admin-row-orphan" key={entry.key}>
+                  <span className="admin-row-name">{entry.name}</span>
+                  <label className="admin-soldout admin-remove">
+                    <input type="checkbox" name={`sil:${entry.key}`} />
+                    <span>Sil</span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <div className="admin-savebar">
           <button className="admin-button" type="submit">

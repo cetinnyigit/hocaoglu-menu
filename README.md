@@ -77,10 +77,39 @@ Kayıtlar ürünle `bölüm:grup:ürün-adı` biçiminde bir anahtarla eşleşir
 sıfırlanır.** Menü verisine dokunduktan sonra `npm run check:keys` çalıştır;
 iki ürün aynı anahtarı üretiyorsa hata verir.
 
+### Panelden eklenen ürünler
+
+Esnaf panelden listelere yeni ürün ekleyebilir. Bu ürünler koda yazılmaz;
+aynı JSON'da `added` dizisinde durur ve render sırasında hedef grubun sonuna
+yerleştirilir (`lib/menu-merge.ts`). Fiyatı, içeriği ve fotoğrafı koddaki
+ürünlerle aynı yerde — `items[key]` altında.
+
+Anahtarları `ek-<rastgele>` biçiminde, addan bağımsız (`newItemKey`).
+Bilinçli bir fark: koddaki ürünün adını değiştirmek fiyatını sıfırlarken,
+panelden eklenen ürünün adı serbestçe düzeltilebilir, fiyatı ve fotoğrafı
+yerinde kalır. Anahtarda iki nokta üst üste olmadığı için koddaki hiçbir
+ürünle çakışamaz.
+
+Hedef, `bölüm-id` + grup kimliğiyle tutulur (grup kimliği: başlığın slug'ı,
+başlıksız gruplarda `main`, kahvaltı tabaklarında `cards`). Koddaki bir grup
+başlığını değiştirirsen o gruba eklenmiş ürünler bölümün ilk grubuna düşer.
+Bölümün kendisini kaldırırsan ürün menüde görünmez; panel onları "Yeri
+kalmamış ürünler" başlığı altında listeler, oradan silinebilir.
+
+Esnaf başına sınır 100 ürün (`ADDED_MAX`, `app/admin/actions.ts`).
+
 ## Panel
 
 `/admin` — şifreyle giriş, 12 saatlik imzalı çerez oturumu. Middleware
 `/admin` altındaki her şeyi korur, `robots.txt` dizine eklenmesini engeller.
+
+Panelde yapılabilenler: fiyat, tükendi, içindekiler, kalori, ürün fotoğrafı ve
+**yeni ürün ekleme / eklenen ürünü yeniden adlandırma / silme**. Hepsi tek bir
+formda ve tek bir `Kaydet` ile gider — ekleme ve silmenin ayrı aksiyonu yok.
+Listelerin altındaki `Ekle` butonu da aynı formu gönderir, sadece kutunun
+yanında duran bir kısayol; adı yazıp `Kaydet`e basmak da çalışır.
+
+Koddaki ürünler panelden silinemez — menüden çıkarmak için "Tükendi".
 
 **Her esnafın kendi şifresi var.** Girilen şifre oturumun kapsamını belirler
 (`lib/auth.ts`): esnaf şifresiyle girenin çerezinde kendi slug'ı yazar ve
@@ -211,7 +240,11 @@ düzeni esnaftan esnafa değişebilir.
   görünebilir. Daha büyük orijinaller varsa `public/menu/hocaoglu/` altındaki
   dosyaları değiştirmek ve `lib/menu-data/hocaoglu.ts` içindeki
   `width`/`height` değerlerini güncellemek yeterli.
-- **Panelde ürün ekleme/silme yok.** Kapsam bilinçli olarak fiyat ve tükendi
-  ile sınırlı tutuldu; ürün listesi kodda değişir.
+- **Panelden eklenen ürün yeni bölüm/grup açamaz.** Ürün yalnızca var olan
+  bir listenin sonuna eklenebilir; bölümler, grup başlıkları, sıralama ve
+  bölüm fotoğrafları kodda değişir. Koddaki ürünler de panelden silinemez.
+- **Silinen ürünün fotoğrafı depoda kalıyor.** Kayıt JSON'dan düşüyor ama
+  Blob'daki dosya duruyor. Menüde görünmediği ve yeri bir daha
+  kullanılmadığı için zararsız; toplu temizlik için bir script yok.
 - **Next.js 14 açık güvenlik uyarıları taşıyor.** 14.2.35 dalın son sürümü ama
   bir kısmı yalnızca 15.5.21+ ile kapanıyor. `npm audit` ile görülebilir.

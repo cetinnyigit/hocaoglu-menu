@@ -1,4 +1,4 @@
-import type { Restaurant } from './menu-data/types'
+import type { MenuBlock, Restaurant } from './menu-data/types'
 
 /**
  * Kaydedilen fiyatların hangi ürüne ait olduğunu bulmak için kalıcı anahtar
@@ -34,7 +34,36 @@ export function slugify(value: string): string {
 }
 
 /** Başlıksız gruplar için sabit ad. */
-const DEFAULT_GROUP = 'main'
+export const DEFAULT_GROUP = 'main'
+
+/** Kahvaltı tabağı bloklarının grup kimliği. */
+export const CARDS_GROUP = 'cards'
+
+/**
+ * Bloğun AddedItem.group karşılığı. Panelden eklenen ürün bu kimlikle
+ * hedefini buluyor — blok sırası değişse de doğru gruba düşsün diye
+ * indeks değil, başlıktan türeyen sabit bir ad kullanılıyor.
+ *
+ * Ürün eklenemeyen bloklar (fotoğraf, fiyatlı not) null döner.
+ */
+export function blockGroupId(block: MenuBlock): string | null {
+  if (block.kind === 'cards') return CARDS_GROUP
+  if (block.kind === 'group') {
+    return block.title ? slugify(block.title) : DEFAULT_GROUP
+  }
+  return null
+}
+
+/**
+ * Panelden eklenen ürün için anahtar üretir.
+ *
+ * Türetilen anahtarlarda hep iki nokta üst üste var (bolum:grup:ad); burada
+ * hiç yok, o yüzden koddaki hiçbir ürünle çakışamaz. Addan bağımsız olması
+ * da bilinçli: esnaf ürünün adını sonradan düzeltince fiyatı kaybolmasın.
+ */
+export function newItemKey(): string {
+  return `ek-${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`
+}
 
 export function itemKey(
   sectionId: string,
@@ -87,7 +116,8 @@ export function collectEditableEntries(
       } else if (block.kind === 'cards') {
         for (const card of block.cards) {
           entries.push({
-            key: cardKey(section.id, card.name),
+            // Panelden eklenen tabakta anahtar hazır gelir; koddakinde türer.
+            key: card.key ?? cardKey(section.id, card.name),
             name: card.name,
             sectionId: section.id,
             sectionLabel: section.navLabel,
@@ -98,7 +128,7 @@ export function collectEditableEntries(
       } else if (block.kind === 'group') {
         for (const item of block.items) {
           entries.push({
-            key: itemKey(section.id, block.title, item.name),
+            key: item.key ?? itemKey(section.id, block.title, item.name),
             name: item.name,
             sectionId: section.id,
             sectionLabel: section.navLabel,

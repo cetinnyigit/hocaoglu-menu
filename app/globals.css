@@ -884,6 +884,47 @@ button.kahvalti-card {
   height: 20px;
   accent-color: var(--brown-dark);
 }
+/* Silme kalıcı; "Tükendi"den ayırt edilsin diye kırmızı. */
+.admin-remove {
+  color: #9b2c2c;
+}
+.admin-remove input {
+  accent-color: #9b2c2c;
+}
+
+/* ---------- ÜRÜN EKLEME ---------- */
+/* Eklenen ürünün adı düzenlenebilir olduğu için satırda input duruyor. */
+.admin-name {
+  font-size: 14.5px;
+  padding: 7px 10px;
+}
+/* Eklenen üründe "Sil" dördüncü sütun olarak geliyor. */
+.admin-row-added {
+  grid-template-columns: 1fr 110px auto auto;
+}
+.admin-row-orphan {
+  grid-template-columns: 1fr auto;
+}
+/* Ekleme satırı: ad kutusu + buton. Fiyat/tükendi sütunları burada yok. */
+.admin-row-new {
+  grid-template-columns: 1fr auto;
+  background: var(--cream);
+}
+.admin-row-new .admin-input {
+  font-size: 14px;
+  padding: 7px 10px;
+}
+.admin-add {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brown-dark);
+  border: none;
+  border-radius: 999px;
+  padding: 9px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+}
 
 /* ---------- ÜRÜN DETAYI (fotoğraf / içerik / kalori) ---------- */
 /* Satırın tamamını kaplar; kapalıyken tek satırlık bir başlık. */
@@ -1031,6 +1072,27 @@ button.kahvalti-card {
   }
   .admin-soldout {
     grid-area: soldout;
+  }
+  /* Eklenen ürünün ad kutusu, koddaki ürünün adıyla aynı yeri tutar. */
+  .admin-name {
+    grid-area: name;
+  }
+  /* "Tükendi" ile "Sil" dar ekranda aynı satırda yan yana. */
+  .admin-row-added {
+    grid-template-areas:
+      'name price'
+      'soldout remove'
+      'detail detail';
+  }
+  .admin-row-added .admin-remove {
+    grid-area: remove;
+    justify-self: end;
+  }
+  /* Bu iki satırda ad/fiyat/tükendi yok; alan şablonu geçerli değil. */
+  .admin-row-new,
+  .admin-row-orphan {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: none;
   }
 }
 
