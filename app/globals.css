@@ -72,6 +72,52 @@
   background: var(--c-navy);
 }
 
+/* Beyzade: menü kartındaki siyah + sarı kimlik. */
+.brand-beyzade {
+  /* Zemin bilerek sitenin kremiyle aynı (bkz. .brand-ay notu): sarmalayıcı
+     bittiğinde altta kalan body zemini ile arada renk dikişi oluşmasın.
+     Kimlik siyah başlıklar ve amber vurgulardan geliyor. */
+  --cream: #faf6ee;
+  --paper: #ffffff;
+  --ink: #17140f;
+  --muted: #7a7266;
+  --line: #e6e0d4;
+  /* Kategori çubuğu: pasif yazı ve aktif hap rengi. */
+  --brown: #1d1a14;
+  --brown-dark: #17140f;
+  /* Tabeladaki sarı (#f2b705) krem zeminde okunmuyor; metinde bir tık
+     koyu amber kullanılıyor, kontrast için. */
+  --c-gold: #a8760a;
+
+  min-height: 100vh;
+  background: var(--cream);
+}
+/* theme-navy bu esnafta lacivert değil siyah: kartta bölüm başlıkları
+   siyah ve sarı şeritler hâlinde sırayla gidiyor. */
+.brand-beyzade .theme-navy .script-heading,
+.brand-beyzade .theme-navy .plain-heading,
+.brand-beyzade .theme-navy .subgroup-title,
+.brand-beyzade .theme-navy .item-price {
+  color: #17140f;
+}
+.brand-beyzade .theme-navy .item-bars .b1,
+.brand-beyzade .theme-navy .item-bars .b2 {
+  background: #17140f;
+}
+.brand-beyzade .hero::after {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 9, 6, 0.15) 0%,
+    rgba(10, 9, 6, 0.88) 100%
+  );
+}
+.brand-beyzade .brand-sub {
+  color: #f2b705;
+}
+.brand-beyzade .footer .vat {
+  background: #17140f;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;

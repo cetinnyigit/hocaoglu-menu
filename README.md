@@ -7,7 +7,8 @@ Ana alan adı: `cetinnyigit.com`. Esnaf varsayılan olarak
 esnafta menü o alan adının kökünde açılır (bkz. [Esnafa özel alan adı]
 (#esnafa-özel-alan-adı)).
 
-Menüler: `hocaoglupasta.com` (Hocaoğlu), `/menu/ay` (Ay Döner) ·
+Menüler: `hocaoglupasta.com` (Hocaoğlu), `/menu/ay` (Ay Döner),
+`/menu/beyzade` (Beyzade Pide & Kebap) ·
 Fiyat paneli: `/admin` · Tanıtım: `/`
 
 Ana sayfa bilinçli olarak tanıtım sayfası — buradan hiçbir müşteri menüsüne
@@ -35,6 +36,7 @@ lib/menu-data/             Menü iskeleti — ürün adları, bölümler, temala
   types.ts                 Ortak veri modeli
   hocaoglu.ts              Hocaoğlu Börek & Cafe menüsü
   ay.ts                    Ay Döner & Köfte menüsü
+  beyzade.ts               Beyzade Pide & Kebap & Lahmacun menüsü
   index.ts                 Esnaf kaydı
 lib/menu-store.ts          Fiyat/tükendi deposu (Vercel Blob)
 lib/menu-merge.ts          Kayıtlı değerleri menünün üzerine bindirir
@@ -205,6 +207,11 @@ Varsayılan krem/kahve palet dışına çıkmak gerekirse `globals.css`'e bir
 denir; `/menu/[slug]` sayfası içeriği o sınıfla sarar, değişkenler oradan
 miras alınır. Diğer menüler etkilenmez. Örnek: Ay Döner'in lacivert + sarı
 kimliği (`.brand-ay`, `theme-navy`, `theme-gold`).
+
+Marka sınıfı bölüm temalarını da ezebilir: Beyzade'de (`.brand-beyzade`)
+`theme-navy` lacivert yerine siyah, `--c-gold` ise tabeladaki sarının krem
+zeminde okunan koyu amber karşılığı. Böylece kartın siyah + sarı ritmi yeni
+bir tema eklemeden çıkıyor.
 
 `--cream` bilerek sitenin varsayılanıyla aynı bırakıldı: sarmalayıcı div
 sayfanın tamamını kaplamadığı için farklı bir zemin rengi altta dikiş

@@ -1,9 +1,10 @@
 import { ay } from './ay'
+import { beyzade } from './beyzade'
 import { hocaoglu } from './hocaoglu'
 import type { Restaurant } from './types'
 
 /** Yeni esnaf eklerken data dosyasını import edip bu listeye ekle. */
-export const restaurants: Restaurant[] = [hocaoglu, ay]
+export const restaurants: Restaurant[] = [hocaoglu, ay, beyzade]
 
 export function getRestaurant(slug: string): Restaurant | undefined {
   return restaurants.find((r) => r.slug === slug)

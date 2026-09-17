@@ -18,7 +18,7 @@ export type MenuTheme =
  * gelir ve zemin/kağıt/metin değişkenlerini ezer. Belirtilmezse sitenin
  * varsayılan krem paleti kullanılır.
  */
-export type MenuPalette = 'ay'
+export type MenuPalette = 'ay' | 'beyzade'
 
 export type MenuImage = {
   src: string
