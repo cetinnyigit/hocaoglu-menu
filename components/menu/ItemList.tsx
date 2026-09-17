@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import { useCallback, useState } from 'react'
 import { formatPrice } from '@/lib/format-price'
-import type { MenuItem } from '@/lib/menu-data/types'
+import type { MenuItem, MenuLang } from '@/lib/menu-data/types'
+import { DEFAULT_LANG, menuStrings } from '@/lib/menu-i18n'
 import { ItemDetailDialog } from './ItemDetailDialog'
 
 /** Satırdaki küçük kare görsel. CSS'teki .item-thumb ile aynı olmalı. */
@@ -26,9 +27,16 @@ function hasDetail(item: MenuItem): boolean {
  * butona dönüşür ve büyük görselli bir kart açar. Detayı olmayan ürünler
  * eskisi gibi düz satır kalır — boş kart açan tıklama hedefi olmaz.
  */
-export function ItemList({ items }: { items: MenuItem[] }) {
+export function ItemList({
+  items,
+  lang = DEFAULT_LANG,
+}: {
+  items: MenuItem[]
+  lang?: MenuLang
+}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const open = openIndex === null ? null : items[openIndex]
+  const strings = menuStrings(lang)
 
   const close = useCallback(() => setOpenIndex(null), [])
 
@@ -37,7 +45,7 @@ export function ItemList({ items }: { items: MenuItem[] }) {
       <div className="item-list">
         {items.map((item, i) => {
           const right = item.soldOut ? (
-            <span className="item-soldout">Tükendi</span>
+            <span className="item-soldout">{strings.soldOut}</span>
           ) : item.price ? (
             <span className="item-price">{formatPrice(item.price)}</span>
           ) : (
@@ -95,7 +103,9 @@ export function ItemList({ items }: { items: MenuItem[] }) {
         })}
       </div>
 
-      {open ? <ItemDetailDialog item={open} onClose={close} /> : null}
+      {open ? (
+        <ItemDetailDialog item={open} lang={lang} onClose={close} />
+      ) : null}
     </>
   )
 }

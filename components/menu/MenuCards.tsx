@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import { useCallback, useState } from 'react'
 import { formatPrice } from '@/lib/format-price'
-import type { MenuCard } from '@/lib/menu-data/types'
+import type { MenuCard, MenuLang } from '@/lib/menu-data/types'
+import { DEFAULT_LANG, menuStrings } from '@/lib/menu-i18n'
 import { ItemDetailDialog } from './ItemDetailDialog'
 
 /** Karttaki küçük kare görsel. CSS'teki .kahvalti-thumb ile aynı olmalı. */
@@ -24,9 +25,16 @@ function hasDetail(card: MenuCard): boolean {
  * Fotoğrafı olan tabak ürün satırlarıyla aynı şekilde davranır: küçük resim
  * kartta görünür, dokununca büyük görselli detay kartı açılır.
  */
-export function MenuCards({ cards }: { cards: MenuCard[] }) {
+export function MenuCards({
+  cards,
+  lang = DEFAULT_LANG,
+}: {
+  cards: MenuCard[]
+  lang?: MenuLang
+}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const open = openIndex === null ? null : cards[openIndex]
+  const strings = menuStrings(lang)
 
   const close = useCallback(() => setOpenIndex(null), [])
 
@@ -56,7 +64,7 @@ export function MenuCards({ cards }: { cards: MenuCard[] }) {
               </div>
 
               {card.soldOut ? (
-                <span className="item-soldout">Tükendi</span>
+                <span className="item-soldout">{strings.soldOut}</span>
               ) : card.price ? (
                 <span className="item-price">{formatPrice(card.price)}</span>
               ) : (
@@ -94,7 +102,9 @@ export function MenuCards({ cards }: { cards: MenuCard[] }) {
         })}
       </div>
 
-      {open ? <ItemDetailDialog item={open} onClose={close} /> : null}
+      {open ? (
+        <ItemDetailDialog item={open} lang={lang} onClose={close} />
+      ) : null}
     </>
   )
 }

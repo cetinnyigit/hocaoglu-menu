@@ -20,6 +20,38 @@ export type MenuTheme =
  */
 export type MenuPalette = 'ay' | 'beyzade'
 
+/**
+ * Menünün yayınlandığı diller. Türkçe varsayılan ve her menüde var;
+ * diğerleri yalnızca esnafın veri dosyasında çevirisi varsa açılır.
+ */
+export type MenuLang = 'tr' | 'en' | 'ar'
+
+/** Türkçe dışındaki diller — çeviri tablosunun anahtarları. */
+export type MenuTranslationLang = Exclude<MenuLang, 'tr'>
+
+/**
+ * Bir menünün tek bir dile çevrilmiş hâli. Her alan isteğe bağlı: çevirisi
+ * olmayan alan Türkçesiyle basılır, yani menü yarım çeviriyle de yayına
+ * girebilir.
+ *
+ * Fiyatlar burada yok — para birimi ve rakamlar dilden bağımsız, panelden
+ * girilen tek fiyat üç dilde de geçerli.
+ */
+export type MenuTranslation = {
+  tagline?: string
+  /** Bölüm id'si → başlık ve kategori çubuğu etiketi. */
+  sections?: Record<string, { heading?: string; navLabel?: string }>
+  /**
+   * Ürün anahtarı (lib/menu-key.ts) → çeviri. Anahtar üzerinden eşleşiyor
+   * çünkü ürün adı zaten çevrilen şeyin kendisi; bölüm + grup + Türkçe addan
+   * türeyen anahtar ise sabit kalıyor.
+   */
+  items?: Record<string, { name?: string; desc?: string; size?: string }>
+  contact?: { address?: string; hours?: string }
+  footer?: { text?: string; vatNote?: string }
+  seo?: { title: string; description: string }
+}
+
 export type MenuImage = {
   src: string
   alt: string
@@ -134,6 +166,11 @@ export type Restaurant = {
   /** Varsayılan krem palet yerine esnafa özel renk kimliği. */
   palette?: MenuPalette
   hero: MenuImage
+  /**
+   * Turist müşteriler için ek diller. Yalnızca burada çevirisi olan diller
+   * menüdeki dil seçiciye çıkar ve /menu/<slug>/<dil> adresinde üretilir.
+   */
+  translations?: Partial<Record<MenuTranslationLang, MenuTranslation>>
   sections: MenuSection[]
   /** Menünün en altında gösterilir; tanımsızsa blok basılmaz. */
   contact?: MenuContact

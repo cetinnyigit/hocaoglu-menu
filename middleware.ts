@@ -13,6 +13,16 @@ import { restaurantDomain, slugForHost } from '@/lib/domains'
  * 2) Panel girişi. /admin altındaki her şey oturum ister ve oturum hangi
  *    esnafa ait olduğunu taşır; başkasının paneline geçilemez.
  */
+/**
+ * Menünün dil yolları. Kendi alan adı olan esnafta menü kökte durduğu için
+ * dil de tek segment oluyor: alanadi.com/en → /menu/<slug>/en.
+ *
+ * Liste bilerek elle yazıldı: lib/menu-i18n.ts'i buraya bağlamak çeviri
+ * motorunu da Edge paketine sokardı (bkz. lib/domains.ts notu). Yeni dil
+ * eklenirse iki yerde de yazılmalı.
+ */
+const LANG_PATH = /^\/(en|ar)$/
+
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl
   const hostSlug = slugForHost(
@@ -28,6 +38,15 @@ export async function middleware(request: NextRequest) {
     // /menu/<slug> görünmesin diye redirect değil rewrite kullanıyoruz.
     if (pathname === '/') {
       return NextResponse.rewrite(new URL(`/menu/${hostSlug}`, request.url))
+    }
+
+    // alanadi.com/en → menünün İngilizce sayfası. Adres çubuğunda yine
+    // kısa hâli kalır.
+    const langMatch = pathname.match(LANG_PATH)
+    if (langMatch) {
+      return NextResponse.rewrite(
+        new URL(`/menu/${hostSlug}/${langMatch[1]}`, request.url),
+      )
     }
 
     // /menu/... yolları bu alan adında yok sayılır: kendi menüsünün tekrar
@@ -47,7 +66,11 @@ export async function middleware(request: NextRequest) {
     : undefined
   const ownDomain = menuSlug ? restaurantDomain(menuSlug) : undefined
   if (ownDomain) {
-    return NextResponse.redirect(`https://${ownDomain}${search}`, 308)
+    // Slug'dan sonraki yol korunuyor: /menu/<slug>/en → alanadi.com/en.
+    // Turistin elindeki bağlantı dili kaybetmeden yeni adrese gitsin.
+    const rest = pathname.split('/').slice(3).join('/')
+    const suffix = rest ? `/${rest}` : ''
+    return NextResponse.redirect(`https://${ownDomain}${suffix}${search}`, 308)
   }
 
   return NextResponse.next()

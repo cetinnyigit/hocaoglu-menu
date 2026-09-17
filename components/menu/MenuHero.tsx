@@ -1,7 +1,18 @@
 import Image from 'next/image'
+import type { ReactNode } from 'react'
 import type { Restaurant } from '@/lib/menu-data/types'
 
-export function MenuHero({ restaurant }: { restaurant: Restaurant }) {
+/**
+ * children: hero'nun üst köşesine basılan ek öğe (dil seçici). Menüde dil
+ * desteği yoksa hiç gelmez, hero eskisi gibi görünür.
+ */
+export function MenuHero({
+  restaurant,
+  children,
+}: {
+  restaurant: Restaurant
+  children?: ReactNode
+}) {
   const { hero, name, established, tagline } = restaurant
 
   return (
@@ -15,6 +26,8 @@ export function MenuHero({ restaurant }: { restaurant: Restaurant }) {
         priority
         style={{ objectFit: 'cover' }}
       />
+      {children}
+
       <div className="hero-content">
         {established ? <p className="brand-est">{established}</p> : null}
         <h1 className="brand-name">{name}</h1>

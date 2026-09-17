@@ -188,6 +188,58 @@ body {
   margin: 4px 0 0;
 }
 
+/* ---------- DİL SEÇİCİ ---------- */
+/* Hero'nun üst köşesinde duran haplar. Turist müşteri menüyü açar açmaz
+   görsün diye kategori çubuğunun değil fotoğrafın üstünde; kaydırınca
+   yukarıda kalır, yerini yapışkan kategori çubuğuna bırakır. */
+.lang-switch {
+  position: absolute;
+  top: 12px;
+  inset-inline-end: 12px;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+}
+.lang-switch a {
+  display: block;
+  /* Dokunma hedefi; menüdeki diğer haplarla aynı ritim. */
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  /* Fotoğrafın üstünde durduğu için kendi zemini var; hero her esnafta
+     farklı renkte olabiliyor. */
+  color: #fff;
+  background: rgba(20, 14, 8, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(4px);
+}
+.lang-switch a.active {
+  background: #fff;
+  color: #1a140d;
+  border-color: #fff;
+}
+
+/* ---------- SAĞDAN SOLA (Arapça) ---------- */
+/* Yalnızca menüyü saran div'de dir="rtl" var; flex düzenleri kendiliğinden
+   dönüyor, burada yalnız yazı hizaları ve tek yönlü boşluklar düzeltiliyor. */
+[dir='rtl'] .hero-content,
+[dir='rtl'] .wrap {
+  text-align: right;
+}
+[dir='rtl'] .item-detail-close {
+  right: auto;
+  left: 10px;
+}
+/* Arapçada büyük harf diye bir şey yok; letter-spacing'li versal başlık
+   satırı okunaksız yapıyor. */
+[dir='rtl'] .brand-est {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 /* ---------- CATEGORY NAV ---------- */
 .catnav {
   position: sticky;

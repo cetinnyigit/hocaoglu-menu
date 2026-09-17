@@ -1,11 +1,19 @@
 import { Fragment } from 'react'
 import { formatPrice } from '@/lib/format-price'
-import type { MenuSection as MenuSectionType } from '@/lib/menu-data/types'
+import type { MenuLang, MenuSection as MenuSectionType } from '@/lib/menu-data/types'
+import { DEFAULT_LANG, menuStrings } from '@/lib/menu-i18n'
 import { ItemList } from './ItemList'
 import { MenuCards } from './MenuCards'
 import { SectionPhoto } from './SectionPhoto'
 
-export function MenuSection({ section }: { section: MenuSectionType }) {
+export function MenuSection({
+  section,
+  lang = DEFAULT_LANG,
+}: {
+  section: MenuSectionType
+  lang?: MenuLang
+}) {
+  const strings = menuStrings(lang)
   const headingClass =
     section.headingStyle === 'script'
       ? 'script-heading'
@@ -29,7 +37,7 @@ export function MenuSection({ section }: { section: MenuSectionType }) {
                   <b>{block.title}</b>
 
                   {block.soldOut ? (
-                    <span className="item-soldout">Tükendi</span>
+                    <span className="item-soldout">{strings.soldOut}</span>
                   ) : block.price ? (
                     <span className="item-price">
                       {formatPrice(block.price)}
@@ -45,7 +53,7 @@ export function MenuSection({ section }: { section: MenuSectionType }) {
               </div>
             )
           case 'cards':
-            return <MenuCards cards={block.cards} key={i} />
+            return <MenuCards cards={block.cards} lang={lang} key={i} />
           case 'photo':
             return (
               <SectionPhoto image={block.image} spaced={block.spaced} key={i} />
@@ -58,7 +66,7 @@ export function MenuSection({ section }: { section: MenuSectionType }) {
                 {block.title ? (
                   <p className="subgroup-title">{block.title}</p>
                 ) : null}
-                <ItemList items={block.items} />
+                <ItemList items={block.items} lang={lang} />
               </Fragment>
             )
         }

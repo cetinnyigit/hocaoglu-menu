@@ -1,12 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { CategoryNav } from '@/components/menu/CategoryNav'
-import { MenuContact } from '@/components/menu/MenuContact'
-import { MenuHero } from '@/components/menu/MenuHero'
-import { MenuSection } from '@/components/menu/MenuSection'
-import { restaurantUrl } from '@/lib/domains'
+import { MenuPageView } from '@/components/menu/MenuPageView'
 import { getRestaurant, getRestaurantSlugs } from '@/lib/menu-data'
+import { DEFAULT_LANG } from '@/lib/menu-i18n'
 import { applyOverrides } from '@/lib/menu-merge'
+import { menuMetadata } from '@/lib/menu-metadata'
 import { readOverrides } from '@/lib/menu-store'
 
 type Props = { params: { slug: string } }
@@ -34,26 +32,7 @@ export const dynamicParams = true
 export const revalidate = 3600
 
 export function generateMetadata({ params }: Props): Metadata {
-  const restaurant = getRestaurant(params.slug)
-  if (!restaurant) return {}
-
-  // Menünün herkese açık tek adresi. Kendi alan adı olan esnafta bu, ana
-  // sitedeki /menu/<slug> değil o alan adının kökü olur — arama motoru aynı
-  // menüyü iki ayrı adres sanmasın.
-  const url = restaurantUrl(params.slug)
-
-  return {
-    title: restaurant.seo.title,
-    description: restaurant.seo.description,
-    alternates: { canonical: url },
-    openGraph: {
-      title: restaurant.seo.title,
-      description: restaurant.seo.description,
-      url,
-      images: [new URL(restaurant.hero.src, url).toString()],
-      type: 'website',
-    },
-  }
+  return menuMetadata(params.slug, DEFAULT_LANG)
 }
 
 export default async function MenuPage({ params }: Props) {
@@ -64,27 +43,5 @@ export default async function MenuPage({ params }: Props) {
   // Okuma önbellekli olduğu için sayfa statik kalmaya devam eder.
   const restaurant = applyOverrides(base, await readOverrides(params.slug))
 
-  // Esnafa özel palet varsa renk değişkenleri bu sarmalayıcıdan miras alınır.
-  return (
-    <div className={restaurant.palette ? `brand-${restaurant.palette}` : ''}>
-      <MenuHero restaurant={restaurant} />
-      <CategoryNav sections={restaurant.sections} />
-
-      <div className="wrap">
-        {restaurant.sections.map((section) => (
-          <MenuSection section={section} key={section.id} />
-        ))}
-
-        {restaurant.contact ? (
-          <MenuContact contact={restaurant.contact} />
-        ) : null}
-      </div>
-
-      <div className="footer">
-        {restaurant.footer.text}
-        <br />
-        <span className="vat">{restaurant.footer.vatNote}</span>
-      </div>
-    </div>
-  )
+  return <MenuPageView restaurant={restaurant} lang={DEFAULT_LANG} />
 }

@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import { useEffect } from 'react'
 import { formatPrice } from '@/lib/format-price'
-import type { MenuItemDetail } from '@/lib/menu-data/types'
+import type { MenuItemDetail, MenuLang } from '@/lib/menu-data/types'
+import { DEFAULT_LANG, menuStrings } from '@/lib/menu-i18n'
 
 /** Detay kartında görsel bu genişlikte basılıyor (kart iç genişliği). */
 const DETAIL_WIDTH = 520
@@ -27,10 +28,14 @@ export type DetailItem = MenuItemDetail & {
 export function ItemDetailDialog({
   item,
   onClose,
+  lang = DEFAULT_LANG,
 }: {
   item: DetailItem
   onClose: () => void
+  lang?: MenuLang
 }) {
+  const strings = menuStrings(lang)
+
   // Kart açıkken Escape kapatsın ve arkadaki menü kaymasın.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -61,7 +66,7 @@ export function ItemDetailDialog({
           type="button"
           className="item-detail-close"
           onClick={onClose}
-          aria-label="Kapat"
+          aria-label={strings.close}
         >
           ✕
         </button>
@@ -83,7 +88,7 @@ export function ItemDetailDialog({
           <div className="item-detail-head">
             <h3 className="item-detail-name">{item.name}</h3>
             {item.soldOut ? (
-              <span className="item-soldout">Tükendi</span>
+              <span className="item-soldout">{strings.soldOut}</span>
             ) : item.price ? (
               <span className="item-price">{formatPrice(item.price)}</span>
             ) : null}
@@ -92,7 +97,11 @@ export function ItemDetailDialog({
           {item.size || item.calories ? (
             <div className="item-detail-meta">
               {item.size ? <span>{item.size}</span> : null}
-              {item.calories ? <span>{item.calories} kcal</span> : null}
+              {item.calories ? (
+                <span>
+                  {item.calories} {strings.calories}
+                </span>
+              ) : null}
             </div>
           ) : null}
 

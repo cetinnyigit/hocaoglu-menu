@@ -1,4 +1,8 @@
-import type { MenuContact as MenuContactType } from '@/lib/menu-data/types'
+import type {
+  MenuLang,
+  MenuContact as MenuContactType,
+} from '@/lib/menu-data/types'
+import { DEFAULT_LANG, menuStrings } from '@/lib/menu-i18n'
 
 /** tel: bağlantısı için boşluk/parantez/tire temizliği. */
 function telHref(phone: string): string {
@@ -10,23 +14,30 @@ function telHref(phone: string): string {
  * Telefon ve adres tıklanabilir — müşteri menüden çıkmadan arayabilsin ya da
  * haritayı açabilsin.
  */
-export function MenuContact({ contact }: { contact: MenuContactType }) {
+export function MenuContact({
+  contact,
+  lang = DEFAULT_LANG,
+}: {
+  contact: MenuContactType
+  lang?: MenuLang
+}) {
   const { address, phones, instagram, hours, mapsUrl } = contact
+  const strings = menuStrings(lang)
   const phoneList = phones?.filter(Boolean) ?? []
   if (!address && !mapsUrl && phoneList.length === 0 && !instagram && !hours) {
     return null
   }
 
   return (
-    <section className="contact" aria-label="İletişim">
-      <h2 className="contact-title">İletişim</h2>
+    <section className="contact" aria-label={strings.contactTitle}>
+      <h2 className="contact-title">{strings.contactTitle}</h2>
 
       <div className="contact-rows">
         {/* Açık adres yazılmadıysa satır yine de durur, yalnızca harita
             bağlantısı gösterilir — müşteri yol tarifini yine alabilsin. */}
         {address || mapsUrl ? (
           <div className="contact-row">
-            <span className="contact-label">Adres</span>
+            <span className="contact-label">{strings.address}</span>
             {mapsUrl ? (
               <a
                 className="contact-value contact-link"
@@ -34,7 +45,7 @@ export function MenuContact({ contact }: { contact: MenuContactType }) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {address ?? 'Google Haritalar’da aç'}
+                {address ?? strings.openInMaps}
               </a>
             ) : (
               <span className="contact-value">{address}</span>
@@ -44,7 +55,7 @@ export function MenuContact({ contact }: { contact: MenuContactType }) {
 
         {phoneList.length > 0 ? (
           <div className="contact-row">
-            <span className="contact-label">Telefon</span>
+            <span className="contact-label">{strings.phone}</span>
             <span className="contact-value contact-phones">
               {phoneList.map((phone) => (
                 <a className="contact-link" href={telHref(phone)} key={phone}>
@@ -57,7 +68,7 @@ export function MenuContact({ contact }: { contact: MenuContactType }) {
 
         {instagram ? (
           <div className="contact-row">
-            <span className="contact-label">Instagram</span>
+            <span className="contact-label">{strings.instagram}</span>
             <a
               className="contact-value contact-link"
               href={`https://instagram.com/${instagram}`}
@@ -71,7 +82,7 @@ export function MenuContact({ contact }: { contact: MenuContactType }) {
 
         {hours ? (
           <div className="contact-row">
-            <span className="contact-label">Saatler</span>
+            <span className="contact-label">{strings.hours}</span>
             <span className="contact-value">{hours}</span>
           </div>
         ) : null}
